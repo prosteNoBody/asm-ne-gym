@@ -5,7 +5,7 @@ Core parts of this project are parallel computation and webassembly evaluation o
 
 Structure
 ----
-`src/` - contains key components of library
-`src/element-engine` - our engine which is optional to use and not required, but can save you some time creating environment. TODO - explain that engine already have build in api interface for core
-`build/` - output which can be use by you in your own application
+`src/` - contains key components of library \
+`src/element-engine` - our engine which is optional to use and not required, but can save you some time creating environment. TODO - explain that engine already have build in api interface for core \
+`build/` - output which can be use by you in your own application \
 `demo/` - showcase of example where we have existing environments and neuroevolution algorithm connected to library
