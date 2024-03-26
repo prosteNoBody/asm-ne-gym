@@ -1,11 +1,11 @@
 export type UUID = string;
 
-export type Size = {
+export type TSize = {
     width: number;
     heigh: number;
 }
 
-export type Position = {
+export type TPosition = {
     x: number;
     y: number;
 }

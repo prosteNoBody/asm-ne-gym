@@ -1,29 +1,50 @@
 import { CControl } from "./Control";
 import { CEntity } from "./Entity";
+import { UUID } from "./types";
 
 const TIMESTEP = 1000 / 60;
 
-export abstract class CElgine<Entity extends CEntity<TSharedState>, TSharedState> {
-    private _ctx: null | CanvasRenderingContext2D = null;
-    private _entities: Array<Entity> = [];    
-    private _score: number = 0;
-    private _isActive: boolean = false;
-    private _sharedState: TSharedState;
-    private _control: CControl<TSharedState>;
-    private _finishCallback: ((state: TSharedState, score: number) => void) | null = null;
+type TFinishCallback<T> = ((state: T, score: number) => void) | null
 
-    constructor (control: CControl<TSharedState>) {
+export abstract class CElgine<Entity extends CEntity<TSharedState>, TSharedState> {
+    protected _ctx: undefined | CanvasRenderingContext2D;
+    protected _entities: Array<Entity> = [];    
+    protected _score: number = 0;
+    protected _isActive: boolean = false;
+    protected _sharedState: TSharedState;
+    protected _control: CControl<TSharedState>;
+    protected _finishCallback: TFinishCallback<TSharedState>;
+
+    constructor (control: CControl<TSharedState>, finishCallback: TFinishCallback<TSharedState>) {
         this._control = control;
+        this._sharedState = this.initSharedState();
+        this._finishCallback = finishCallback;
+    }
+
+    protected abstract initSharedState(): TSharedState;
+    
+    protected registerEntity(entity: Entity) {
+        this._entities.push(entity);
+    }
+    protected destroyEntity(id: UUID): void {
+        const index = this._entities.findIndex(e => e.getId() === id);
+        this._entities.splice(index, 1);
     }
 
     private render(): void {
-        if (this._ctx === null)
+        if (!this._ctx)
             return;
 
+        this._ctx.beginPath();
+        this.renderMap(this._ctx);
         for (let i = 0; i < this._entities.length; i++) {
             this._entities[i].render(this._ctx);
         }
+        this._ctx.fill();
     }
+    protected renderMap(ctx: CanvasRenderingContext2D): void {
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+    };
 
     private updateState(): void {
         this._sharedState = this._control.updateState(this._sharedState);
@@ -31,7 +52,7 @@ export abstract class CElgine<Entity extends CEntity<TSharedState>, TSharedState
 
     private updateEntities(): void {
         for (let i = 0; i < this._entities.length; i++) {
-            this._entities[i].update(this.getSharedState());
+            this._entities[i].update(this._sharedState);
         }
     }
 
@@ -57,8 +78,8 @@ export abstract class CElgine<Entity extends CEntity<TSharedState>, TSharedState
                     && ((ent1Pos.y <= ent2Pos.y && ent2Pos.y <= ent1Pos.y + ent1Size.heigh)
                     || (ent1Pos.y <= ent2Pos.y + ent2Size.heigh && ent2Pos.y  + ent2Size.heigh <= ent1Pos.y + ent1Size.heigh))
                 ) {
-                    entity1.colide(this.getSharedState(), entity2);
-                    entity2.colide(this.getSharedState(), entity1);
+                    entity1.colide(this._sharedState, entity2);
+                    entity2.colide(this._sharedState, entity1);
                 }
             }
         }
@@ -97,25 +118,23 @@ export abstract class CElgine<Entity extends CEntity<TSharedState>, TSharedState
         }
 
         this.render();
-        requestAnimationFrame(this.renderableLoop);
+        requestAnimationFrame(t => this.renderableLoop(t));
     }
-
-    protected abstract initSharedState(): TSharedState;
-    protected abstract getSharedState(): TSharedState;
-
-    public abstract init(): void;
 
     public mount(ctx: CanvasRenderingContext2D): void {
         this._ctx = ctx;
-
-        this.render()
+        if (!this._ctx)
+            this.render()
     }
 
     public run(): void {
         this._isActive = true;
         
+        console.log("running game");
+        
+
         if (this._ctx)
-            requestAnimationFrame(this.renderableLoop);
+            requestAnimationFrame(t => this.renderableLoop(t));
         else
             this.loop();
     }

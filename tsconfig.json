@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "target": "ES6",
+        "module": "ES2020",
+        "strict": true,
+        "paths": {
+            "@core": ["./core"],
+            "@core/*": ["./core/*"],
+            "@engine": ["./element-engine"],
+            "@engine/*": ["./element-engine/*"],
+            "@wasm": ["./wasm"],
+            "@wasm/*": ["./wasm/*"],
+            "@demo": ["./demo"],
+            "@demo/*": ["./demo/*"],
+        }
+    }
+}
