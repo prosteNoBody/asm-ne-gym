@@ -10,6 +10,7 @@ type Controls = {
 type InternalState = {
     controls: Controls;
     mapSize: TSize;
+    isFinished: boolean;
 };
 
 class CMoverGameControl extends CControl<InternalState> {
@@ -25,6 +26,11 @@ class CMoverGameControl extends CControl<InternalState> {
 
         window.addEventListener('keydown', this.handleKeydownEvent);
         window.addEventListener('keyup', this.handleKeyupEvent);
+    }
+
+    public onmount(): void {
+        window.removeEventListener('keydown', this.handleKeydownEvent);
+        window.removeEventListener('keyup', this.handleKeyupEvent);
     }
 
     private handleKeyEvent (key: string, state: boolean) {
@@ -67,6 +73,12 @@ class CPlayerEntity extends CEntity<InternalState> {
     }
 
     public update(state: InternalState): void {
+
+        this._pos.y += 1;
+        if (this._pos.y + this._size.heigh > state.mapSize.heigh)
+            state.isFinished = true;
+
+        return;
         if (state.controls.up)
             this._pos.y -= 3;
         if (state.controls.down)
@@ -94,10 +106,18 @@ class CPlayerEntity extends CEntity<InternalState> {
 class CMoverGame extends CElgine<CPlayerEntity, InternalState> {
     constructor () {
         const controls = new CMoverGameControl();
-        super(controls, null);
+        super(controls, (_, score) => {
+            console.log(score);
+        });
 
         const player = new CPlayerEntity();
         this.registerEntity(player);
+    }
+
+    public updateGame(): void {
+        this._score++;
+        if (this._sharedState.isFinished)
+            this.stop();
     }
 
     protected renderMap(ctx: CanvasRenderingContext2D): void {
@@ -114,9 +134,10 @@ class CMoverGame extends CElgine<CPlayerEntity, InternalState> {
                 right: false,
             },
             mapSize: {
-                width: 600,
-                heigh: 600,
-            }
+                width: 1000,
+                heigh: 1000,
+            },
+            isFinished: false,
         }
     }
 }
@@ -131,6 +152,6 @@ document.addEventListener('readystatechange', () => {
         throw new Error("Canvas CTX missing");
 
     const game = new CMoverGame();
-    game.mount(canvasCtx);
+    // game.mount(canvasCtx);
     game.run();
 })

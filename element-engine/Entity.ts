@@ -1,16 +1,13 @@
-import { TPosition, TSize, UUID } from "./types";
-
-type TDestroyCallback = (id: UUID) => void;
+import { TPosition, TSize, UUID, TEngineCallbacks } from "./types";
 
 export abstract class CEntity<TSharedState> {
     protected readonly _id: UUID;
     protected readonly _collisions: boolean;
-    protected readonly _destroyCallback?: TDestroyCallback;
     protected readonly _pos: TPosition;
     protected readonly _size: TSize;
+    protected _engineCallbacks?: TEngineCallbacks<CEntity<TSharedState>, TSharedState>;
 
-    constructor(size: TSize, position: TPosition, collisions: boolean, destroyCallback?: TDestroyCallback) {
-        this._destroyCallback = destroyCallback;
+    constructor(size: TSize, position: TPosition, collisions: boolean) {
         this._id = Math.floor(Math.random() * 20).toString();
         this._size = size;
         this._pos = position;
@@ -21,8 +18,12 @@ export abstract class CEntity<TSharedState> {
     public abstract render(ctx: CanvasRenderingContext2D): void;
     public abstract colide(state: TSharedState, entity: CEntity<TSharedState>): void;
     
+    public registerCallbacks(engineCallbacks: TEngineCallbacks<CEntity<TSharedState>, TSharedState>) {
+        this._engineCallbacks = engineCallbacks;
+    }
+
     public destroy(): void {
-        this._destroyCallback?.(this._id);
+        this._engineCallbacks?.destroyEntity(this._id);
     };
     public isCollidable(): boolean {
         return this._collisions;

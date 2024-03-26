@@ -1,6 +1,6 @@
 import { CControl } from "./Control";
 import { CEntity } from "./Entity";
-import { UUID } from "./types";
+import { TEngineCallbacks, UUID } from "./types";
 
 const TIMESTEP = 1000 / 60;
 
@@ -23,8 +23,16 @@ export abstract class CElgine<Entity extends CEntity<TSharedState>, TSharedState
 
     protected abstract initSharedState(): TSharedState;
     
+    private getCallbacks(): TEngineCallbacks<Entity, TSharedState> {
+        return {
+            registerEntity: (entity: Entity) => this.registerEntity(entity),
+            destroyEntity: (id: UUID) => this.destroyEntity(id),
+            stopEngine: () => this.stop(),
+        }
+    }
     protected registerEntity(entity: Entity) {
         this._entities.push(entity);
+        entity.registerCallbacks(this.getCallbacks() as TEngineCallbacks<CEntity<TSharedState>, TSharedState>);
     }
     protected destroyEntity(id: UUID): void {
         const index = this._entities.findIndex(e => e.getId() === id);
@@ -45,6 +53,8 @@ export abstract class CElgine<Entity extends CEntity<TSharedState>, TSharedState
     protected renderMap(ctx: CanvasRenderingContext2D): void {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
     };
+
+    protected updateGame(): void {}
 
     private updateState(): void {
         this._sharedState = this._control.updateState(this._sharedState);
@@ -88,14 +98,20 @@ export abstract class CElgine<Entity extends CEntity<TSharedState>, TSharedState
     // all internal states updates
     private update(): void {
         this.updateState();
+        this.updateGame();
         this.updateEntities();
         this.updateColissions();
+    }
+
+    private beforeEnd(): void {
+        this._finishCallback?.(this._sharedState, this._score);
+        this._control.onmount();
     }
 
     // loop for intensive and fast calculation of game output with automatic Control flow
     private loop(): void {
         if (!this._isActive) {
-            return this._finishCallback?.(this._sharedState, this._score);
+            return this.beforeEnd();
         }
         this.update();
         this.loop();
@@ -105,7 +121,7 @@ export abstract class CElgine<Entity extends CEntity<TSharedState>, TSharedState
     private _lastFrameTimeMs = 0;
     private renderableLoop(timestamp: DOMHighResTimeStamp): void {
         if (!this._isActive) {
-            return this._finishCallback?.(this._sharedState, this._score);
+            return this.beforeEnd();
         }
 
         let delta = timestamp - this._lastFrameTimeMs;
@@ -130,9 +146,6 @@ export abstract class CElgine<Entity extends CEntity<TSharedState>, TSharedState
     public run(): void {
         this._isActive = true;
         
-        console.log("running game");
-        
-
         if (this._ctx)
             requestAnimationFrame(t => this.renderableLoop(t));
         else
