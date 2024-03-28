@@ -13,7 +13,7 @@ type InternalState = {
     isFinished: boolean;
 };
 
-class CMoverGameControl extends CControl<InternalState> {
+class CRaceGameControl extends CControl<InternalState> {
     private _controls: Controls;
 
     constructor() {
@@ -62,38 +62,61 @@ class CMoverGameControl extends CControl<InternalState> {
     }
 }
 
-class CPlayerEntity extends CEntity<InternalState> {
+class CCarEntity extends CEntity<InternalState> {
+    private acc = 0;
+    private vel = 0;
+    private speed = 0;
+    private angle = 0;
+
+    private readonly MAX_SPEED = 10;
+
     constructor () {
-        super({ width: 20, heigh: 20 }, { x:0, y:0 }, true);
+        super({ width: 40, heigh: 40 }, { x: 280, y: 50 }, true);
     }
 
     public render(ctx: CanvasRenderingContext2D): void {
         ctx.fillStyle = "blue";
-        ctx.fillRect(this._pos.x, this._pos.y, this._size.width, this._size.heigh);
+        ctx.fillRect(this._pos.x - this._size.width, this._pos.y - this._size.heigh, this._size.width * 2, this._size.heigh * 2);
+        ctx.fillStyle = "red";
+        ctx.fillRect(this._pos.x + Math.sin(this.angle) * this._size.width, this._pos.y + Math.cos(this.angle) * this._size.heigh, 4, 4);
     }
 
     public update(state: InternalState): void {
+        if (state.controls.left) {
+            this.angle += Math.PI / 50 * this.speed / 5;
+        }
+        if (state.controls.right) {
+            this.angle -= Math.PI / 50 * this.speed / 5;
+        }
+        this.angle %= (Math.PI * 2);
 
-        this._pos.y += 1;
-        if (this._pos.y + this._size.heigh > state.mapSize.heigh)
-            state.isFinished = true;
+        if (state.controls.up) {
+            this.acc = 2;
+        }
+        if (state.controls.down) {
+            this.acc = -5;
+        }
+        this.vel += this.acc;
+        this.speed += this.vel;
+        if (this.speed < 0)
+            this.speed = 0;
+        else if (this.speed > this.MAX_SPEED)
+            this.speed = this.MAX_SPEED;
 
-        return;
-        if (state.controls.up)
-            this._pos.y -= 3;
-        if (state.controls.down)
-            this._pos.y += 3;
-        if (state.controls.left)
-            this._pos.x -= 3;
-        if (state.controls.right)
-            this._pos.x += 3;
+        this._pos.x += this.speed * Math.sin(this.angle);
+        this._pos.y += this.speed * Math.cos(this.angle);
 
-        if (this._pos.x < 0)
-            this._pos.x = 0;
+
+
+
+
+        // wall colide check
+        if (this._pos.x - this._size.width < 0)
+            this._pos.x = this._size.width;
         if (this._pos.x + this._size.width > state.mapSize.width)
             this._pos.x = state.mapSize.width - this._size.width;
-        if (this._pos.y < 0)
-            this._pos.y = 0;
+        if (this._pos.y - this._size.heigh < 0)
+            this._pos.y = this._size.heigh;
         if (this._pos.y + this._size.heigh > state.mapSize.heigh)
             this._pos.y = state.mapSize.heigh - this._size.heigh;
     }
@@ -103,22 +126,18 @@ class CPlayerEntity extends CEntity<InternalState> {
     }
 }
 
-class CMoverGame extends CElgine<CPlayerEntity, InternalState> {
+export class CRaceGame extends CElgine<CEntity<InternalState>, InternalState> {
     constructor () {
-        const controls = new CMoverGameControl();
+        const controls = new CRaceGameControl();
         super(controls, (_, score) => {
             console.log(score);
         });
 
-        const player = new CPlayerEntity();
-        this.registerEntity(player);
+        const car = new CCarEntity();
+        this.registerEntity(car);
     }
 
-    public updateGame(): void {
-        this._score++;
-        if (this._sharedState.isFinished)
-            this.stop();
-    }
+    public updateGame(): void {}
 
     protected renderMap(ctx: CanvasRenderingContext2D): void {
         ctx.fillStyle = "gray";
@@ -134,24 +153,10 @@ class CMoverGame extends CElgine<CPlayerEntity, InternalState> {
                 right: false,
             },
             mapSize: {
-                width: 1000,
-                heigh: 1000,
+                width: 800,
+                heigh: 800,
             },
             isFinished: false,
         }
     }
 }
-
-document.addEventListener('readystatechange', () => {
-    if (document.readyState === 'loading')
-        return;
-
-    const canvas = <HTMLCanvasElement>document.getElementById('gameCanvas');
-    const canvasCtx = canvas.getContext('2d');
-    if (!canvasCtx)
-        throw new Error("Canvas CTX missing");
-
-    const game = new CMoverGame();
-    // game.mount(canvasCtx);
-    game.run();
-})
