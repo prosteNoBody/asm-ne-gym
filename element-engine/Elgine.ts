@@ -54,7 +54,7 @@ export abstract class CElgine<Entity extends CEntity<TSharedState>, TSharedState
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
     };
 
-    protected updateGame(): void {}
+    protected updateGame(_: TSharedState, __: number): void {}
 
     private updateState(): void {
         this._sharedState = this._control.updateState(this._sharedState);
@@ -62,7 +62,7 @@ export abstract class CElgine<Entity extends CEntity<TSharedState>, TSharedState
 
     private updateEntities(): void {
         for (let i = 0; i < this._entities.length; i++) {
-            this._entities[i].update(this._sharedState);
+            this._entities[i].update(this._sharedState, this._updateTicks);
         }
     }
 
@@ -96,9 +96,11 @@ export abstract class CElgine<Entity extends CEntity<TSharedState>, TSharedState
     }
 
     // all internal states updates
+    private _updateTicks = 0;
     private update(): void {
+        this._updateTicks++;
         this.updateState();
-        this.updateGame();
+        this.updateGame(this._sharedState, this._updateTicks);
         this.updateEntities();
         this.updateColissions();
     }
@@ -125,15 +127,18 @@ export abstract class CElgine<Entity extends CEntity<TSharedState>, TSharedState
         }
 
         let delta = timestamp - this._lastFrameTimeMs;
-        this._lastFrameTimeMs = timestamp;
 
+        let wasUpdatedFlag = false;
         while (delta >= TIMESTEP) {
+            wasUpdatedFlag = true;
             // one game process
             this.update();
+            this._lastFrameTimeMs += TIMESTEP;
             delta -= TIMESTEP;
         }
 
-        this.render();
+        if (wasUpdatedFlag)
+            this.render();
         requestAnimationFrame(t => this.renderableLoop(t));
     }
 

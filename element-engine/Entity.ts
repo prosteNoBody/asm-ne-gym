@@ -14,7 +14,7 @@ export abstract class CEntity<TSharedState> {
         this._collisions = collisions;
     }
     
-    public abstract update(state: TSharedState): void;
+    public abstract update(state: TSharedState, ticks: number): void;
     public abstract render(ctx: CanvasRenderingContext2D): void;
     public abstract colide(state: TSharedState, entity: CEntity<TSharedState>): void;
     
