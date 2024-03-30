@@ -30,10 +30,17 @@ export abstract class CElgine<Entity extends CEntity<TSharedState>, TSharedState
             stopEngine: () => this.stop(),
         }
     }
+
+    protected registerEntities(entities: Array<Entity>) {
+        entities.forEach(e => {
+            this.registerEntity(e);
+        })
+    }
     protected registerEntity(entity: Entity) {
         this._entities.push(entity);
         entity.registerCallbacks(this.getCallbacks() as TEngineCallbacks<CEntity<TSharedState>, TSharedState>);
     }
+
     protected destroyEntity(id: UUID): void {
         const index = this._entities.findIndex(e => e.getId() === id);
         this._entities.splice(index, 1);
