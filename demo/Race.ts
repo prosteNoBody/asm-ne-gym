@@ -62,68 +62,74 @@ class CRaceGameControl extends CControl<InternalState> {
     }
 }
 
-class CCarEntity extends CEntity<InternalState> {
-    private acc = 0;
-    private vel = 0;
-    private speed = 0;
-    private angle = 0;
-
-    private readonly MAX_SPEED = 10;
-
+class CCar extends CEntity<InternalState> {
     constructor () {
-        super({ width: 40, heigh: 40 }, { x: 280, y: 50 }, true);
+        super({ width: 20, heigh: 20 }, { x: 280, y: 50 }, true);
     }
 
     public render(ctx: CanvasRenderingContext2D): void {
         ctx.fillStyle = "blue";
-        ctx.fillRect(this._pos.x - this._size.width, this._pos.y - this._size.heigh, this._size.width * 2, this._size.heigh * 2);
+        ctx.fillRect(this._pos.x, this._pos.y, this._size.width, this._size.heigh);
         ctx.fillStyle = "red";
-        ctx.fillRect(this._pos.x + Math.sin(this.angle) * this._size.width, this._pos.y + Math.cos(this.angle) * this._size.heigh, 4, 4);
+        ctx.fillRect(this._pos.x + (this._size.width / 2) + Math.sin(this.angle) * (this._size.width / 2) - 2,
+            this._pos.y + (this._size.heigh / 2) + Math.cos(this.angle) * (this._size.heigh / 2) - 2, 4, 4);
     }
 
-    public update(state: InternalState): void {
-        if (state.controls.left) {
-            this.angle += Math.PI / 50 * this.speed / 5;
+    private acc = 0;
+    private vel = 0;
+    private angle = 0;
+    private readonly MAX_SPEED = 12;
+    public update(state: InternalState, tick: number): void {
+        if (!(tick % 1)) {
+            if (state.controls.down)
+                this.acc = -.2;
+            else if (state.controls.up)
+                this.acc = .3;
+            else
+                this.acc = 0;
+            
+            this.vel += this.acc;
+            if (this.vel < 2)
+                this.vel = 2;
+            else if (this.vel > this.MAX_SPEED)
+                this.vel = this.MAX_SPEED;
+
+            if (state.controls.left)
+                this.angle += (Math.PI / 4) * (.4 / this.vel);
+            if (state.controls.right)
+                this.angle -= (Math.PI / 4) * (.4 / this.vel);
+            this.angle %= (Math.PI * 2);
         }
-        if (state.controls.right) {
-            this.angle -= Math.PI / 50 * this.speed / 5;
-        }
-        this.angle %= (Math.PI * 2);
 
-        if (state.controls.up) {
-            this.acc = 2;
-        }
-        if (state.controls.down) {
-            this.acc = -5;
-        }
-        this.vel += this.acc;
-        this.speed += this.vel;
-        if (this.speed < 0)
-            this.speed = 0;
-        else if (this.speed > this.MAX_SPEED)
-            this.speed = this.MAX_SPEED;
-
-        this._pos.x += this.speed * Math.sin(this.angle);
-        this._pos.y += this.speed * Math.cos(this.angle);
-
-
-
-
+        this._pos.x += this.vel * Math.sin(this.angle);
+        this._pos.y += this.vel * Math.cos(this.angle);
 
         // wall colide check
-        if (this._pos.x - this._size.width < 0)
-            this._pos.x = this._size.width;
+        if (this._pos.x < 0)
+            this._pos.x = 0;
         if (this._pos.x + this._size.width > state.mapSize.width)
             this._pos.x = state.mapSize.width - this._size.width;
-        if (this._pos.y - this._size.heigh < 0)
-            this._pos.y = this._size.heigh;
+        if (this._pos.y < 0)
+            this._pos.y = 0;
         if (this._pos.y + this._size.heigh > state.mapSize.heigh)
             this._pos.y = state.mapSize.heigh - this._size.heigh;
     }
 
-    public colide(state: InternalState, entity: CEntity<InternalState>): void {
-        
+    public colide(_: InternalState, entity: CEntity<InternalState>): void {
+        if (entity instanceof CBarier) {
+            this.destroy();
+            this._engineCallbacks?.stopEngine();
+        }
     }
+}
+
+class CBarier extends CEntity<InternalState> {
+    public render(ctx: CanvasRenderingContext2D): void {
+        ctx.fillStyle = "black";
+        ctx.fillRect(this._pos.x, this._pos.y, this._size.width, this._size.heigh);
+    }
+    public update(_: InternalState, __: number): void {}
+    public colide(_: InternalState, __: CEntity<InternalState>): void {}
 }
 
 export class CRaceGame extends CElgine<CEntity<InternalState>, InternalState> {
@@ -133,11 +139,18 @@ export class CRaceGame extends CElgine<CEntity<InternalState>, InternalState> {
             console.log(score);
         });
 
-        const car = new CCarEntity();
+        // create car
+        const car = new CCar();
         this.registerEntity(car);
-    }
 
-    public updateGame(): void {}
+        // create barriers
+        for (const size of [
+            [23, 23, 23, 23], [12, 12, 12, 12]
+        ]) {
+            const barrier = new CBarier({ width: size[2], heigh: size[3] }, { x: size[0], y: size[1] }, true);
+            this.registerEntity(barrier);
+        }
+    }
 
     protected renderMap(ctx: CanvasRenderingContext2D): void {
         ctx.fillStyle = "gray";
@@ -153,8 +166,8 @@ export class CRaceGame extends CElgine<CEntity<InternalState>, InternalState> {
                 right: false,
             },
             mapSize: {
-                width: 800,
-                heigh: 800,
+                width: 1500,
+                heigh: 900,
             },
             isFinished: false,
         }
