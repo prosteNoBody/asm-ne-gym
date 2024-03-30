@@ -89,14 +89,12 @@ export abstract class CElgine<Entity extends CEntity<TSharedState>, TSharedState
                 const ent1Size = entity1.getSize();
                 const ent2Pos = entity2.getPos();
                 const ent2Size = entity2.getSize();
-                if (
-                    ((ent1Pos.x <= ent2Pos.x && ent2Pos.x <= ent1Pos.x + ent1Size.width)
-                    || (ent1Pos.x <= ent2Pos.x + ent2Size.width && ent2Pos.x  + ent2Size.width <= ent1Pos.x + ent1Size.width))
-                    && ((ent1Pos.y <= ent2Pos.y && ent2Pos.y <= ent1Pos.y + ent1Size.heigh)
-                    || (ent1Pos.y <= ent2Pos.y + ent2Size.heigh && ent2Pos.y  + ent2Size.heigh <= ent1Pos.y + ent1Size.heigh))
-                ) {
-                    entity1.colide(this._sharedState, entity2);
-                    entity2.colide(this._sharedState, entity1);
+                if ((ent1Pos.x < ent2Pos.x ?
+                    (ent2Pos.x - ent1Pos.x < ent1Size.width) : (ent1Pos.x - ent2Pos.x < ent2Size.width))
+                    && (ent1Pos.y < ent2Pos.y ?
+                    (ent2Pos.y - ent1Pos.y < ent1Size.heigh) : (ent1Pos.y - ent2Pos.y < ent2Size.heigh))) {
+                        entity1.colide(this._sharedState, entity2);
+                        entity2.colide(this._sharedState, entity1);
                 }
             }
         }
