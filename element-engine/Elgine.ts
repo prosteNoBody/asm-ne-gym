@@ -4,12 +4,11 @@ import { TEngineCallbacks, UUID } from "./types";
 
 const TIMESTEP = 1000 / 60;
 
-type TFinishCallback<T> = ((state: T, score: number) => void) | null
+type TFinishCallback<T> = ((state: T) => void) | null
 
 export abstract class CElgine<Entity extends CEntity<TSharedState>, TSharedState> {
     protected _ctx: undefined | CanvasRenderingContext2D;
-    protected _entities: Array<Entity> = [];    
-    protected _score: number = 0;
+    protected _entities: Array<Entity> = [];
     protected _isActive: boolean = false;
     protected _sharedState: TSharedState;
     protected _control: CControl<TSharedState>;
@@ -111,17 +110,15 @@ export abstract class CElgine<Entity extends CEntity<TSharedState>, TSharedState
     }
 
     private beforeEnd(): void {
-        this._finishCallback?.(this._sharedState, this._score);
+        this._finishCallback?.(this._sharedState);
         this._control.onmount();
     }
 
     // loop for intensive and fast calculation of game output with automatic Control flow
     private loop(): void {
-        if (!this._isActive) {
-            return this.beforeEnd();
-        }
-        this.update();
-        this.loop();
+        while (this._isActive)
+            this.update();
+        this.beforeEnd();
     }
 
     // normal render process for user watchable game progress

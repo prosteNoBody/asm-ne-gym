@@ -8,7 +8,7 @@ export abstract class CEntity<TSharedState> {
     protected _engineCallbacks?: TEngineCallbacks<CEntity<TSharedState>, TSharedState>;
 
     constructor(size: TSize, position: TPosition, collisions: boolean) {
-        this._id = Math.floor(Math.random() * 20).toString();
+        this._id = Math.floor(Math.random() * 9999).toString();
         this._size = size;
         this._pos = position;
         this._collisions = collisions;
