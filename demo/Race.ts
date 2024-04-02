@@ -1,4 +1,4 @@
-import { CElgine, CEntity, CControl, TSize } from '@engine/index';
+import { CElgine, CEntity, CControl, TSize, TPosition } from '@engine/index';
 
 type Controls = {
     up: boolean;
@@ -8,12 +8,12 @@ type Controls = {
 }
 
 type InternalState = {
+    score: number;
     controls: Controls;
     mapSize: TSize;
-    isFinished: boolean;
 };
 
-class CRaceGameControl extends CControl<InternalState> {
+class CRaceControl extends CControl<InternalState> {
     private _controls: Controls;
 
     constructor() {
@@ -34,7 +34,7 @@ class CRaceGameControl extends CControl<InternalState> {
     }
 
     private handleKeyEvent (key: string, state: boolean) {
-        switch(key) {
+          switch(key) {
             case "w":
                 this._controls.up = state;
                 break;
@@ -63,8 +63,8 @@ class CRaceGameControl extends CControl<InternalState> {
 }
 
 class CCar extends CEntity<InternalState> {
-    constructor () {
-        super({ width: 20, heigh: 20 }, { x: 280, y: 50 }, true);
+    constructor (position: TPosition) {
+        super({ width: 20, heigh: 20 }, position, true);
     }
 
     public render(ctx: CanvasRenderingContext2D): void {
@@ -77,30 +77,31 @@ class CCar extends CEntity<InternalState> {
 
     private acc = 0;
     private vel = 0;
-    private angle = 0;
-    private readonly MAX_SPEED = 12;
+    private angle = Math.PI / 2;
+    private static readonly MAX_SPEED = 9;
     public update(state: InternalState, tick: number): void {
-        if (!(tick % 1)) {
-            if (state.controls.down)
-                this.acc = -.2;
-            else if (state.controls.up)
-                this.acc = .3;
-            else
-                this.acc = 0;
-            
-            this.vel += this.acc;
-            if (this.vel < 2)
-                this.vel = 2;
-            else if (this.vel > this.MAX_SPEED)
-                this.vel = this.MAX_SPEED;
+        if (state.controls.down)
+            this.acc = -.3;
+        else if (state.controls.up)
+            this.acc = .3;
+        else
+            this.acc = 0;
+        
+        this.vel += this.acc;
+        if (this.vel < 3)
+            this.vel = 3;
+        else if (this.vel > CCar.MAX_SPEED)
+            this.vel = CCar.MAX_SPEED;
 
-            if (state.controls.left)
-                this.angle += (Math.PI / 4) * (.4 / this.vel);
-            if (state.controls.right)
-                this.angle -= (Math.PI / 4) * (.4 / this.vel);
-            this.angle %= (Math.PI * 2);
-        }
+        if (state.controls.left)
+            this.angle += (Math.PI / 4) * (.4 / this.vel);
+        if (state.controls.right)
+            this.angle -= (Math.PI / 4) * (.4 / this.vel);
+        this.angle %= (Math.PI * 2);
 
+        // update score by amont of traveled distance
+        const TICK_PENALITY = -2; // motivate agent to go fast as possible
+        state.score += this.vel + TICK_PENALITY;
         this._pos.x += this.vel * Math.sin(this.angle);
         this._pos.y += this.vel * Math.cos(this.angle);
 
@@ -134,18 +135,27 @@ class CBarier extends CEntity<InternalState> {
 
 export class CRaceGame extends CElgine<CEntity<InternalState>, InternalState> {
     constructor () {
-        const controls = new CRaceGameControl();
-        super(controls, (_, score) => {
-            console.log(score);
+        const controls = new CRaceControl();
+        super(controls, state => {
+            console.log(state.score);
         });
 
         // create car
-        const car = new CCar();
+        const car = new CCar({ x: 75, y: 55 });
         this.registerEntity(car);
-
+        
         // create barriers
         for (const size of [
-            [23, 23, 23, 23], [12, 12, 12, 12]
+            // outer bariers
+            [0, 0, 35, 900],[35, 0, 555, 35], [555, 35, 35, 110], [555, 115, 250, 35],[800, 0, 35, 150], [835, 0, 670 , 35],
+            [35, 525, 200, 35], [35, 865, 750, 35], [1465, 35, 35, 200],
+            [1455, 235, 35, 150], [785, 840, 150, 35], [935, 825, 150, 35], [1050, 790, 150, 35], [1165, 755, 150, 35],[1280, 720, 150, 35], 
+            [1300, 685, 150, 35], [1350, 650, 120, 35], [1400, 615, 80, 35], [1445, 385, 35, 150],[1430, 535, 35, 80],
+            // inner baries
+            [140, 130, 260, 35], [365, 165, 35, 80], [365, 245, 660, 35], [990, 145, 35, 100], [990, 110, 360, 35], [1330, 145, 35, 70],
+            [1300, 215, 35, 70], [1270, 285, 35, 70], [1270, 285, 35, 100], [1240, 385, 35, 100], [1155, 485, 100, 35], [1080, 520, 100, 35],
+            [1000, 555, 100, 35], [930, 590, 100, 35], [850, 625, 100, 35], [680, 660, 200, 35], [230, 695, 470, 35], [430, 350, 35, 345],
+            [170, 315, 295, 35], [170, 165, 35, 150]
         ]) {
             const barrier = new CBarier({ width: size[2], heigh: size[3] }, { x: size[0], y: size[1] }, true);
             this.registerEntity(barrier);
@@ -157,8 +167,13 @@ export class CRaceGame extends CElgine<CEntity<InternalState>, InternalState> {
         ctx.fillRect(0, 0, this._sharedState.mapSize.width, this._sharedState.mapSize.heigh);
     }
 
+    public getSize(): TSize {
+        return this._sharedState.mapSize;
+    }
+
     protected initSharedState(): InternalState {
         return {
+            score: 0,
             controls: {
                 up: false,
                 down: false,
@@ -169,7 +184,6 @@ export class CRaceGame extends CElgine<CEntity<InternalState>, InternalState> {
                 width: 1500,
                 heigh: 900,
             },
-            isFinished: false,
         }
     }
 }

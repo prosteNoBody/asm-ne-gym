@@ -1,4 +1,5 @@
-import { CRaceGame } from './Race';
+import { CFlappyGame } from "./Flappy";
+import { CRaceGame } from "./Race";
 
 document.addEventListener('readystatechange', () => {
     if (document.readyState === 'loading')
@@ -9,7 +10,11 @@ document.addEventListener('readystatechange', () => {
     if (!canvasCtx)
         throw new Error("Canvas CTX missing");
 
-    const game = new CRaceGame();
+    const game = new CFlappyGame();
+    
+    canvas.width = game.getSize().width;
+    canvas.height = game.getSize().heigh;
+
     game.mount(canvasCtx);
     game.run();
 })
