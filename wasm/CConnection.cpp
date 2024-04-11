@@ -1,7 +1,8 @@
 #include "CConnection.hpp"
+#include "CNeuron.hpp"
 
-CConnection::CConnection(const double weight, const CNeuron* from): m_weight(weight), m_from(from) {};
+CConnection::CConnection(double weight, size_t from): m_weight(weight), m_from(from) {};
 
-double CConnection::getValue() {
-    return m_from->getValue() * m_weight;
+double CConnection::getValue(std::vector<CNeuron>& neurons) {
+    return neurons[m_from].getValue(neurons) * m_weight;
 }

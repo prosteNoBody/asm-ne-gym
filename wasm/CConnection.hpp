@@ -1,10 +1,15 @@
+#pragma once
+
+#include <vector>
+#include <cstddef>
+
 class CNeuron;
 
 class CConnection {
 private:
     double m_weight;
-    CNeuron* m_from;
+    size_t m_from;
 public:
-    CConnection(const double, const CNeuron*);
-    double getValue();
+    CConnection(double, size_t);
+    double getValue(std::vector<CNeuron>&);
 };
