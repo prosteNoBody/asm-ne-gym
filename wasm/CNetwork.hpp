@@ -1,6 +1,6 @@
-#include "CConnection.hpp"
-#include "CNeuron.hpp"
 #include <vector>
+#include "ENeuronType.hpp"
+#include "CNeuron.hpp"
 
 class CNetwork {
 private:
@@ -8,6 +8,7 @@ private:
     std::vector<CNeuron*> m_in_neurons;
     std::vector<CNeuron*> m_out_neurons;
 public:
-    void registerNode();
-    void forward();
+    void registerNode(std::function<double(double)>, const ENeuronType);
+    void registerConnection(const int, const int, const double);
+    std::vector<double> forward(const std::vector<double>&);
 };

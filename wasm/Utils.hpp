@@ -1,6 +1,6 @@
 #include <cmath>
 
-class ActivateFunctions {
+class ActivationFunctions {
 public:
     static double SIGM (double x) {
         return 1 / (1 + exp(-x));
@@ -32,4 +32,7 @@ public:
     static double IDENTITY (double x) {
         return x;
     };
+    static double QUAD (double x) {
+        return x * x;
+    }
 };

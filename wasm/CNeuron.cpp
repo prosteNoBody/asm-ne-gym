@@ -1,9 +1,10 @@
 #include <functional>
 #include "CNeuron.hpp"
 
-CNeuron::CNeuron(std::function<double(double)> activate_function, ENeuronType type): m_activate_function(activate_function), m_type(type), m_is_cached(false) {};
+CNeuron::CNeuron(std::function<double(double)> activate_function):
+    m_activate_function(activate_function), m_is_cached(false) {};
 
-void CNeruon::registerConnection(double weight, CNeuron* neuron) {
+void CNeuron::registerConnection(const double weight, const CNeuron* neuron) {
     m_connections.emplace_back(weight, neuron);
 }
 
@@ -11,7 +12,7 @@ void CNeuron::clearValue() {
     m_is_cached = false;
 }
 
-void CNeuron::setValue(double value) {
+void CNeuron::setValue(const double value) {
     m_is_cached = true;
     m_value = value;
 }

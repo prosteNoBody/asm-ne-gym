@@ -1,26 +1,19 @@
 #include <vector>
 #include <functional>
-#include <cmath>
 #include "CConnection.hpp"
 
-enum ENeuronType {
-    INPUT,
-    HIDDEN,
-    OUTPUT,
-};
+class CConnection;
 
 class CNeuron {
 private:
-    ENeuronType m_type;
     bool m_is_cached;
     double m_value;
     std::vector<CConnection> m_connections;
     std::function<double(double)> m_activation_function;
-    double calculateNeuronValue ();
 public:
-    CNeuron(std::function<double(double)>, ENeuronType);
-    void registerConnection(double weight, CNeuron*);
+    CNeuron(std::function<double(double)>);
+    void registerConnection(const double weight, const CNeuron*);
     void clearValue();
     double getValue();
-    void setValue(double);
+    void setValue(const double);
 };
