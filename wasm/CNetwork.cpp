@@ -4,9 +4,9 @@
 void CNetwork::registerNode(std::function<double(double)> activation_function, ENeuronType type) {
     m_neurons.emplace_back(activation_function);
     size_t neuron_index = m_neurons.size() - 1;
-    if (type == INPUT)
+    if (type == ENeuronType::INPUT)
         m_in_neurons.emplace_back(neuron_index);
-    else if (type == OUTPUT)
+    else if (type == ENeuronType::OUTPUT)
         m_out_neurons.emplace_back(neuron_index);
 }
 
@@ -14,7 +14,7 @@ void CNetwork::registerConnection(size_t from, size_t to, double weight) {
     m_neurons[to].registerConnection(weight, from);
 }
 
-std::vector<double> CNetwork::forward(std::vector<double>& params) {
+std::vector<double> CNetwork::forward(const std::vector<double>& params) {
     // reset values
     for (auto& neuron : m_neurons)
         neuron.clearValue();

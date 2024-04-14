@@ -12,5 +12,5 @@ private:
 public:
     void registerNode(std::function<double(double)>, ENeuronType);
     void registerConnection(size_t, size_t, double);
-    std::vector<double> forward(std::vector<double>&);
+    std::vector<double> forward(const std::vector<double>&);
 };

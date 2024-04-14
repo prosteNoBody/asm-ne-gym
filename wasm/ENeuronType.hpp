@@ -1,6 +1,6 @@
 #pragma once
 
-enum ENeuronType {
+enum class ENeuronType {
     INPUT,
     HIDDEN,
     OUTPUT,
