@@ -1,13 +1,15 @@
+#ifdef EMSCRIPTEN
 // emscripten library
-// #include <emscripten/bind.h>
-
-// algorithm libraries
-#include "Algorithms/Neat.hpp"
+#include <emscripten/bind.h>
+#endif
 
 #include <string>
 #include <memory>
 #include <vector>
 #include "CNeuroevolutionBase.hpp"
+
+// algorithm libraries
+#include "Algorithms/Neat.hpp"
 
 // Algorithm string enum
 class AlgorithmType {
@@ -26,8 +28,8 @@ public:
             algorithm = std::make_unique<Neat>();
     };
     // wrapper functions
-    std::string initalPopulation() {
-        return algorithm->initalPopulation();
+    std::string initialPopulation(const std::vector<double>& config) {
+        return algorithm->initialPopulation(config);
     }
     std::string generateGeneration(const std::string& population) {
         return algorithm->generateGeneration(population);
@@ -40,11 +42,15 @@ public:
     }
 };
 
-/*EMSCRIPTEN_BINDINGS(asm_core) {
-    class_<AsmCore>("AsmCore")
+#ifdef EMSCRIPTEN
+EMSCRIPTEN_BINDINGS(asm_core) {
+    emscripten::class_<AsmCore>("AsmCore")
         .constructor<const std::string&>()
-        .function("initalPopulation", &AsmCore::initalPopulation);
-        .function("generateGeneration", &AsmCore::generateGeneration);
-        .function("buildGenome", &AsmCore::buildGenome);
-        .function("froward", &AsmCore::froward);
-}*/
+        .function("initialPopulation", &AsmCore::initialPopulation)
+        .function("generateGeneration", &AsmCore::generateGeneration)
+        .function("buildGenome", &AsmCore::buildGenome)
+        .function("forward", &AsmCore::forward);
+
+    emscripten::register_vector<double>("VectorDouble");
+}
+#endif

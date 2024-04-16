@@ -12,6 +12,8 @@
             "@wasm/*": ["./wasm/*"],
             "@demo": ["./demo"],
             "@demo/*": ["./demo/*"],
+            "@build_wasm": ["./build_wasm"],
+            "@build_wasm/*": ["./build_wasm/*"]
         }
     }
 }

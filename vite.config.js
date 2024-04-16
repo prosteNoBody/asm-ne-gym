@@ -9,17 +9,20 @@ export default defineConfig({
   root: resolve(__dirname, 'demo'),
   build: {
     emptyOutDir: true,
+    assetsDir: '',
     outDir: resolve(__dirname, 'build'),
     rollupOptions: {
-      assetsDir: '',
       input: 'demo/index.html',
       plugins: [],
     },
   },
   server: {
-    host: '127.0.0.1',
+    host: true,
     port: 9300,
     cors: true,
+  },
+  preview: {
+    port: 9300,
   },
   resolve: {
     alias: {
@@ -27,6 +30,7 @@ export default defineConfig({
       '@engine': resolve(__dirname, 'element-engine'),
       '@wasm': resolve(__dirname, 'wasm'),
       '@demo': resolve(__dirname, 'demo'),
+      '@build_wasm': resolve(__dirname, 'build_wasm'),
     },
   },
 })

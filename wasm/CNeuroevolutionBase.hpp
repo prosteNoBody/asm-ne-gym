@@ -8,8 +8,10 @@ class CNeuroevolutionBase {
 protected:
     CNetwork m_network;
 public:
+    virtual ~CNeuroevolutionBase() {};
+
     // managing population
-    virtual std::string initalPopulation() = 0;
+    virtual std::string initialPopulation(const std::vector<double>&) = 0;
     virtual std::string generateGeneration(const std::string& population) = 0;
     
     // network managment

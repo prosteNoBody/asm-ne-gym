@@ -3,7 +3,9 @@
   "scripts": {
     "dev": "vite dev",
     "types-check": "tsc --noEmit",
-    "build": "vite build"
+    "build": "vite build",
+    "watch": "vite build --watch",
+    "preview": "vite preview"
   },
   "devDependencies": {
     "@vitejs/plugin-basic-ssl": "^1.1.0",

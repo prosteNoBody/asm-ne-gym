@@ -4,7 +4,7 @@
 
 class Neat: public CNeuroevolutionBase {
 public:
-    std::string initalPopulation() override {
+    std::string initialPopulation(const std::vector<double>& config) override {
         return "initalized population";
     };
     std::string generateGeneration(const std::string& population) override {
