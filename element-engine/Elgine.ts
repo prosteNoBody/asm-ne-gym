@@ -91,7 +91,7 @@ export abstract class CElgine<Entity extends CEntity<TSharedState>, TSharedState
                 if ((ent1Pos.x < ent2Pos.x ?
                     (ent2Pos.x - ent1Pos.x < ent1Size.width) : (ent1Pos.x - ent2Pos.x < ent2Size.width))
                     && (ent1Pos.y < ent2Pos.y ?
-                    (ent2Pos.y - ent1Pos.y < ent1Size.heigh) : (ent1Pos.y - ent2Pos.y < ent2Size.heigh))) {
+                    (ent2Pos.y - ent1Pos.y < ent1Size.height) : (ent1Pos.y - ent2Pos.y < ent2Size.height))) {
                         entity1.colide(this._sharedState, entity2);
                         entity2.colide(this._sharedState, entity1);
                 }

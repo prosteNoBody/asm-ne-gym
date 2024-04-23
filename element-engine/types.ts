@@ -4,7 +4,7 @@ export type UUID = string;
 
 export type TSize = {
     width: number;
-    heigh: number;
+    height: number;
 }
 
 export type TPosition = {

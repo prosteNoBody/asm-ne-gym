@@ -10,9 +10,12 @@ protected:
 public:
     virtual ~CNeuroevolutionBase() {};
 
+    // name
+    virtual std::string getName() const = 0;
+
     // managing population
-    virtual std::string initialPopulation(const std::vector<double>&) = 0;
-    virtual std::string generateGeneration(const std::string& population) = 0;
+    virtual std::string initialPopulation(const std::vector<double>&) const = 0;
+    virtual std::string generateGeneration(const std::vector<double>&, const std::string&) const = 0;
     
     // network managment
     virtual int buildGenome(const std::string& genome) = 0;

@@ -1,19 +1,23 @@
-all: wasm_compile typescript_compile watch_wasm typescript_watch
+WASM_FLAGS := -lembind -O2 -s MODULARIZE=1 -s EXPORT_ES6=1 -sENVIRONMENT="web" --no-entry
+
+all: wasm_compile typescript_compile webpage_preview
 
 types: wasm_types typescript_types
 
 docker:
 	docker compose up || docker-compose up
 
-g++_compilation:
+g++_compile:
 	g++ wasm/test.cpp wasm/CNetwork.cpp wasm/CNeuron.cpp wasm/CConnection.cpp -o wasm/test -g -Wall -pedantic
 
-wasm_types:
-	make wasm_compile FLAGS="-fsyntax-only"
-
 wasm_compile:
-	emcc $(FLAGS) -lembind -o build_wasm/asm_core.js wasm/AsmCore.cpp wasm/CNetwork.cpp wasm/CNeuron.cpp wasm/CConnection.cpp \
-	-O2 -s MODULARIZE=1 -s EXPORT_ES6=1 -sENVIRONMENT="web" --no-entry
+	emcc $(WASM_FLAGS) $(WASM_EXTRA_FLAGS) -o build_wasm/asm_core.js wasm/AsmCore.cpp wasm/CNetwork.cpp wasm/CNeuron.cpp wasm/CConnection.cpp
+
+wasm_types:
+	make wasm_compile WASM_EXTRA_FLAGS="-fsyntax-only"
+
+wasm_compile-dev:
+	make wasm_compile WASM_EXTRA_FLAGS="-sASSERTIONS"
 
 watch_wasm:
 	inotifywait -m -e modify,create,delete --format '%w%f' wasm/ | while read FILE; do make wasm_compile; done &
@@ -26,3 +30,6 @@ typescript_watch:
 
 typescript_types:
 	npm run types-check
+
+webpage_preview:
+	npm run preview

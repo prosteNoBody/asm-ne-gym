@@ -1,13 +1,28 @@
-import { resolve } from 'path'
+import { resolve, normalize } from 'path'
+import { readFileSync } from 'fs';
 import { defineConfig } from 'vite'
 import basicSsl from '@vitejs/plugin-basic-ssl'
 
 export default defineConfig({
   plugins: [
     basicSsl(),
+    // custom plugin to inject filename to modules [STATUS = currently not working because WebWorker build didn't replace palceholder value]
+/*     {
+      name: 'raw-filename-injector',
+      enforce: 'post',
+      transform(code, id) {
+        if (!id.endsWith('.ts') || !code.includes("__FILENAME__")) return null;
+
+        const fileName = id.split('/').pop().replace('.ts', '');
+        const enhancedCode = code.replace(/__FILENAME__/g, `"${fileName}"`);
+
+        return enhancedCode;
+      }
+    } */
   ],
   root: resolve(__dirname, 'demo'),
   build: {
+    target: 'esnext',
     emptyOutDir: true,
     assetsDir: '',
     outDir: resolve(__dirname, 'build'),
@@ -15,6 +30,9 @@ export default defineConfig({
       input: 'demo/index.html',
       plugins: [],
     },
+  },
+  worker: {
+    format: 'es',
   },
   server: {
     host: true,

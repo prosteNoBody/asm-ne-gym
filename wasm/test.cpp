@@ -2,10 +2,11 @@
 #include <vector>
 #include "AsmCore.cpp"
 
+// this file is constipated as testing raw c++ without wasm
 int main () {
-    AsmCore asmCore(AlgorithmType::NEAT);
-    std::cout << asmCore.initalPopulation() << std::endl;
-    std::cout << asmCore.generateGeneration("") << std::endl;
+    AsmCore asmCore("NEAT");
+    std::cout << asmCore.initialPopulation({23, 23}) << std::endl;
+    std::cout << asmCore.generateGeneration({ 23 }, "") << std::endl;
     std::cout << asmCore.buildGenome("") << std::endl;
 
     std::vector<double> params = { 1, 2 };

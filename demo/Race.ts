@@ -64,15 +64,15 @@ class CRaceControl extends CControl<InternalState> {
 
 class CCar extends CEntity<InternalState> {
     constructor (position: TPosition) {
-        super({ width: 20, heigh: 20 }, position, true);
+        super({ width: 20, height: 20 }, position, true);
     }
 
     public render(ctx: CanvasRenderingContext2D): void {
         ctx.fillStyle = "blue";
-        ctx.fillRect(this._pos.x, this._pos.y, this._size.width, this._size.heigh);
+        ctx.fillRect(this._pos.x, this._pos.y, this._size.width, this._size.height);
         ctx.fillStyle = "red";
         ctx.fillRect(this._pos.x + (this._size.width / 2) + Math.sin(this.angle) * (this._size.width / 2) - 2,
-            this._pos.y + (this._size.heigh / 2) + Math.cos(this.angle) * (this._size.heigh / 2) - 2, 4, 4);
+            this._pos.y + (this._size.height / 2) + Math.cos(this.angle) * (this._size.height / 2) - 2, 4, 4);
     }
 
     private acc = 0;
@@ -112,8 +112,8 @@ class CCar extends CEntity<InternalState> {
             this._pos.x = state.mapSize.width - this._size.width;
         if (this._pos.y < 0)
             this._pos.y = 0;
-        if (this._pos.y + this._size.heigh > state.mapSize.heigh)
-            this._pos.y = state.mapSize.heigh - this._size.heigh;
+        if (this._pos.y + this._size.height > state.mapSize.height)
+            this._pos.y = state.mapSize.height - this._size.height;
     }
 
     public colide(_: InternalState, entity: CEntity<InternalState>): void {
@@ -127,7 +127,7 @@ class CCar extends CEntity<InternalState> {
 class CBarier extends CEntity<InternalState> {
     public render(ctx: CanvasRenderingContext2D): void {
         ctx.fillStyle = "black";
-        ctx.fillRect(this._pos.x, this._pos.y, this._size.width, this._size.heigh);
+        ctx.fillRect(this._pos.x, this._pos.y, this._size.width, this._size.height);
     }
     public update(_: InternalState, __: number): void {}
     public colide(_: InternalState, __: CEntity<InternalState>): void {}
@@ -157,14 +157,14 @@ export class CRaceGame extends CElgine<CEntity<InternalState>, InternalState> {
             [1000, 555, 100, 35], [930, 590, 100, 35], [850, 625, 100, 35], [680, 660, 200, 35], [230, 695, 470, 35], [430, 350, 35, 345],
             [170, 315, 295, 35], [170, 165, 35, 150]
         ]) {
-            const barrier = new CBarier({ width: size[2], heigh: size[3] }, { x: size[0], y: size[1] }, true);
+            const barrier = new CBarier({ width: size[2], height: size[3] }, { x: size[0], y: size[1] }, true);
             this.registerEntity(barrier);
         }
     }
 
     protected renderMap(ctx: CanvasRenderingContext2D): void {
         ctx.fillStyle = "gray";
-        ctx.fillRect(0, 0, this._sharedState.mapSize.width, this._sharedState.mapSize.heigh);
+        ctx.fillRect(0, 0, this._sharedState.mapSize.width, this._sharedState.mapSize.height);
     }
 
     public getSize(): TSize {
@@ -182,7 +182,7 @@ export class CRaceGame extends CElgine<CEntity<InternalState>, InternalState> {
             },
             mapSize: {
                 width: 1500,
-                heigh: 900,
+                height: 900,
             },
         }
     }

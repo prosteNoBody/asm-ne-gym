@@ -4,10 +4,11 @@
 
 class Neat: public CNeuroevolutionBase {
 public:
-    std::string initialPopulation(const std::vector<double>& config) override {
+    std::string getName() const override { return "NEAT"; };
+    std::string initialPopulation(const std::vector<double>& hyperparameters) const override {
         return "initalized population";
     };
-    std::string generateGeneration(const std::string& population) override {
+    std::string generateGeneration(const std::vector<double>& hyperparameters, const std::string& population) const override {
         return "generated generation";
     }
     int buildGenome(const std::string& genome) override {

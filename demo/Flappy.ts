@@ -29,13 +29,13 @@ class CFlappyControl extends CControl<InternalState> {
 
         this._controls = { jump: false };
 
-        window.addEventListener('keydown', this.handleKeydownEvent);
-        window.addEventListener('keyup', this.handleKeyupEvent);
+        /* window.addEventListener('keydown', this.handleKeydownEvent);
+        window.addEventListener('keyup', this.handleKeyupEvent); */
     }
 
     public onmount(): void {
-        window.removeEventListener('keydown', this.handleKeydownEvent);
-        window.removeEventListener('keyup', this.handleKeyupEvent);
+        /* window.removeEventListener('keydown', this.handleKeydownEvent);
+        window.removeEventListener('keyup', this.handleKeyupEvent); */
     }
 
     private handleKeyEvent (key: string, state: boolean) {
@@ -52,7 +52,7 @@ class CFlappyControl extends CControl<InternalState> {
     public updateState(state: InternalState): InternalState {
         state.controls = { ...this._controls }
         return state;
-        if (state.birdData.position + 26 > state.pipeData.y && !state.controls.jump && state.score < 300000)
+        if (state.birdData.position + 26 > state.pipeData.y && !state.controls.jump && state.score < 90000)
             state.controls.jump = true;
         else
             state.controls.jump = false;
@@ -62,7 +62,7 @@ class CFlappyControl extends CControl<InternalState> {
 
 class CBird extends CEntity<InternalState> {
     constructor (position: TPosition) {
-        super({ width: 20, heigh: 20 }, position, true);
+        super({ width: 20, height: 20 }, position, true);
         this.data = {
             velocity: CBird.JUMP_VEL,
             position: position.y,
@@ -72,7 +72,7 @@ class CBird extends CEntity<InternalState> {
 
     public render(ctx: CanvasRenderingContext2D): void {
         ctx.fillStyle = "blue";
-        ctx.fillRect(this._pos.x, this._pos.y, this._size.width, this._size.heigh);
+        ctx.fillRect(this._pos.x, this._pos.y, this._size.width, this._size.height);
     }
 
     private static readonly MAX_VEL = 10;
@@ -94,7 +94,7 @@ class CBird extends CEntity<InternalState> {
         this._pos.y += this.data.velocity;
         if (this._pos.y < -100) {
             this._pos.y = -100;
-        } else if ((this._pos.y + this._size.heigh > state.mapSize.heigh)) {
+        } else if ((this._pos.y + this._size.height > state.mapSize.height)) {
             this.destroy();
             this._engineCallbacks?.stopEngine();
         }
@@ -116,7 +116,7 @@ class CPipe extends CEntity<InternalState> {
     static readonly WIDTH = 75;
     public render(ctx: CanvasRenderingContext2D): void {
         ctx.fillStyle = "red";
-        ctx.fillRect(this._pos.x, this._pos.y, this._size.width, this._size.heigh);
+        ctx.fillRect(this._pos.x, this._pos.y, this._size.width, this._size.height);
     }
     public update(state: InternalState, _: number): void {
         this._pos.x -= CFlappyGame.PIPE_STEP;
@@ -127,10 +127,10 @@ class CPipe extends CEntity<InternalState> {
 }
 
 export class CFlappyGame extends CElgine<CEntity<InternalState>, InternalState> {
-    constructor () {
+    constructor (finishCallback: (score: number) => void) {
         const controls = new CFlappyControl();
         super(controls, state => {
-            console.log(state.score);
+            finishCallback(state.score);
         });
 
         // create bird
@@ -147,16 +147,16 @@ export class CFlappyGame extends CElgine<CEntity<InternalState>, InternalState> 
 
             const OFFSET = 100; // from top and bottom 
             const HALF_GAP = 50; // gap for bird to fly through
-            const gapPosition = Math.ceil(Math.random() * (state.mapSize.heigh - OFFSET * 2 - HALF_GAP * 2)) + OFFSET;
+            const gapPosition = Math.ceil(Math.random() * (state.mapSize.height - OFFSET * 2 - HALF_GAP * 2)) + OFFSET;
             
             // create two pipes with gap
             const top_pipe = new CPipe(
-                { width: CPipe.WIDTH, heigh: gapPosition - HALF_GAP },
+                { width: CPipe.WIDTH, height: gapPosition - HALF_GAP },
                 { x: state.pipeData.x, y: 0},
                 true
             );
             const bottom_pipe = new CPipe(
-                { width: CPipe.WIDTH, heigh: state.mapSize.heigh - gapPosition - HALF_GAP },
+                { width: CPipe.WIDTH, height: state.mapSize.height - gapPosition - HALF_GAP },
                 { x: state.pipeData.x, y: gapPosition + HALF_GAP},
                 true
             );
@@ -168,7 +168,7 @@ export class CFlappyGame extends CElgine<CEntity<InternalState>, InternalState> 
 
     protected renderMap(ctx: CanvasRenderingContext2D): void {
         ctx.fillStyle = "#a3fcff";
-        ctx.fillRect(0, 0, this._sharedState.mapSize.width, this._sharedState.mapSize.heigh);
+        ctx.fillRect(0, 0, this._sharedState.mapSize.width, this._sharedState.mapSize.height);
     }
 
     public getSize(): TSize {
@@ -192,7 +192,7 @@ export class CFlappyGame extends CElgine<CEntity<InternalState>, InternalState> 
             },
             mapSize: {
                 width: 750,
-                heigh: 750,
+                height: 750,
             },
         }
     }
