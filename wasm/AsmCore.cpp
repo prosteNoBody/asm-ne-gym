@@ -9,7 +9,7 @@
 #include "CNeuroevolutionBase.hpp"
 
 // algorithm libraries
-#include "Algorithms/Neat.hpp"
+#include "algorithms/Neat.hpp"
 
 class AsmCore {
 private:

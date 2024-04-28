@@ -1,6 +1,8 @@
 WASM_FLAGS := -lembind -O2 -s MODULARIZE=1 -s EXPORT_ES6=1 -sENVIRONMENT="web" --no-entry
 
-all: wasm_compile typescript_compile webpage_preview
+all: typescript_install compile
+
+compile: wasm_compile typescript_compile webpage_preview
 
 types: wasm_types typescript_types
 
@@ -21,6 +23,9 @@ wasm_compile-dev:
 
 watch_wasm:
 	inotifywait -m -e modify,create,delete --format '%w%f' wasm/ | while read FILE; do make wasm_compile; done &
+
+typescript_install:
+	npm i
 
 typescript_compile:
 	npm run build
