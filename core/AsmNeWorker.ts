@@ -20,7 +20,7 @@ import type { AsmNeModule, WorkerInputData, WorkerOutputData } from "@core/types
             let fitness = -1;
             try {
                 // calculate fitness
-                fitness = environmentRun((inputs: Array<number>) => calculateOutputs(phenotype, Vector, inputs), undefined);
+                fitness = await environmentRun((inputs: Array<number>) => calculateOutputs(phenotype, Vector, inputs), undefined);
             } catch (e) {
                 console.log(e);
             }

@@ -2,10 +2,12 @@ import { resolve, normalize } from 'path'
 import { readFileSync } from 'fs';
 import { defineConfig } from 'vite'
 import basicSsl from '@vitejs/plugin-basic-ssl'
+import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
   plugins: [
     basicSsl(),
+    vue(),
     // custom plugin to inject filename to modules [STATUS = currently not working because WebWorker build didn't replace palceholder value]
 /*     {
       name: 'raw-filename-injector',

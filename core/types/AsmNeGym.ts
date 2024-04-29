@@ -33,4 +33,4 @@ export type WorkerInputData = {
 
 export type WorkerOutputData = Array<number>;
 
-export type AsmNeModule = (calculateAction: (inputs: Array<number>) => Array<number>, canvas?: HTMLCanvasElement) => number;
+export type AsmNeModule = (calculateAction: (inputs: Array<number>) => Array<number>, canvas?: HTMLCanvasElement) => Promise<number>;

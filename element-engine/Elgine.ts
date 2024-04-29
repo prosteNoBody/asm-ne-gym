@@ -123,6 +123,10 @@ export abstract class CElgine<Entity extends CEntity<TSharedState>, TSharedState
 
     // normal render process for user watchable game progress
     private _lastFrameTimeMs = 0;
+    private setFrameBeforeRenderableLoop(timestamp: DOMHighResTimeStamp): void {
+        this._lastFrameTimeMs = timestamp;
+        requestAnimationFrame(t => this.renderableLoop(t));
+    }
     private renderableLoop(timestamp: DOMHighResTimeStamp): void {
         if (!this._isActive) {
             return this.beforeEnd();
@@ -137,7 +141,7 @@ export abstract class CElgine<Entity extends CEntity<TSharedState>, TSharedState
             this.update();
             this._lastFrameTimeMs += TIMESTEP;
             delta -= TIMESTEP;
-        }
+        }        
 
         if (wasUpdatedFlag)
             this.render();
@@ -154,7 +158,7 @@ export abstract class CElgine<Entity extends CEntity<TSharedState>, TSharedState
         this._isActive = true;
         
         if (this._ctx)
-            requestAnimationFrame(t => this.renderableLoop(t));
+            requestAnimationFrame(t => this.setFrameBeforeRenderableLoop(t));
         else
             this.loop();
     }

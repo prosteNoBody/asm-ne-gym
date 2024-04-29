@@ -3,8 +3,7 @@ import AsmNeWorker from "@core/AsmNeWorker?worker";
 import { AsmNeGymError, calculateOutputs } from "@core/AsmNeUtils";
 import type { AsmNeModule, AsmNeGymTrainCriterion, WorkerInputData, WorkerOutputData } from "@core/types/AsmNeGym";
 
-const WORKER_INIT_TIMEOUT = 2000;
-
+const WORKER_INIT_TIMEOUT = 60000;
 export class AsmNeGym {
     private m_module: string;
     private m_algorithm: string;
@@ -13,7 +12,7 @@ export class AsmNeGym {
     private m_threads = navigator?.hardwareConcurrency ?? 4;
     private m_population = "";
 
-    private m_forceStop = false;
+    private m_forceStop = true;
 
     constructor(module: string, algorithm: string, hyperparameters: Array<number>) {
         this.m_module = module;
@@ -46,6 +45,9 @@ export class AsmNeGym {
     public getFitnessHistory() {
         return this.m_fitnessHistory;
     }
+    public clearFitnessHistory() {
+        this.m_fitnessHistory = [];
+    }
     public getBestGenome() {
         return this.m_bestGenome;
     }
@@ -61,7 +63,7 @@ export class AsmNeGym {
 
         const phenotype = new AsmCore(this.m_algorithm);
         phenotype.buildGenome(genome);
-        return environmentRun((inputs: Array<number>) => calculateOutputs(phenotype, Vector, inputs), canvas);
+        return await environmentRun((inputs: Array<number>) => calculateOutputs(phenotype, Vector, inputs), canvas);
     }
 
     async forceStop() {
@@ -70,6 +72,7 @@ export class AsmNeGym {
 
     async train(criterion: AsmNeGymTrainCriterion) {
         if (!criterion.fintess && !criterion.iterations && !criterion.time) throw new AsmNeGymError("No criterion were provided");
+        if (!this.m_forceStop) throw new AsmNeGymError("Train is already running on this instance");
 
         this.m_forceStop = false;
 
@@ -87,8 +90,11 @@ export class AsmNeGym {
             const worker = new AsmNeWorker();
             initializePromises.push(new Promise(resolve => {
                 // wait for worker initialization
-                worker.addEventListener("message", (e: MessageEvent<boolean>) => resolve(true));
-                // timeout for initialization
+                worker.addEventListener("message", (e: MessageEvent<boolean>) => resolve(true), { once: true });
+                // timeout for initialization - cause that this line could cause trouble because synchronization
+                // and fitness might return synchronization parameter, instead real fitness value
+                // turn off if there are trouble, in evaluation
+                // to findout if there are wrong fitness value results, uncomment code after evaluation
                 setTimeout(() => resolve(true), WORKER_INIT_TIMEOUT);
             }));
             workerPool.push(worker);
@@ -97,7 +103,10 @@ export class AsmNeGym {
         // wait for all workers to initialize
         await Promise.all(initializePromises);
 
-        let generation = this.m_population ? this.m_population : core.initialPopulation(hyperparameters);
+        // initalize population if no population is present
+        if (this.m_population.length === 0) this.m_population = core.initialPopulation(hyperparameters);
+        
+        let generation = this.m_population;
 
         // population training
         let bestFitness = -1;
@@ -108,11 +117,15 @@ export class AsmNeGym {
             const fitness = await this.evaluateGeneration(workerPool, generation);
             const genomes = this.splitGeneration(generation);
 
+
             // reoder genomes by their fitness function (from best to worst)
             const combined = fitness.map((val, index) => ({ fitness: val, genome: genomes[index] })).sort((a, b) => a.fitness - b.fitness);
 
+            // next line is to debug wrong fitness evaluation
+            // if (fitness.some(a => a as unknown as boolean === true)) console.error('Wrong fitness value: ', fitness);
+
             // concat sorted genoems
-            generation = combined.map(val => val.genome).join(this.getGenerationSplitCharacter());
+            generation = this.getGenerationSplitCharacter() + combined.map(val => val.genome).join(this.getGenerationSplitCharacter());
 
             // update iteration number and population
             iteration++;
@@ -128,22 +141,22 @@ export class AsmNeGym {
             }
 
             // end if criterion is met
-            if (!this.checkCriterion(criterion, performance.now() - startTime, iteration, bestFitness) || this.m_forceStop) break;
+            if (this.checkCriterion(criterion, performance.now() - startTime, iteration, bestFitness) || this.m_forceStop) break;
 
             // create new generation
-            const fintessVector = new Vector();
-            fitness.forEach(value => fintessVector.push_back(value));
             generation = core.generateGeneration(hyperparameters, generation);
+            if (generation.indexOf('u') !== -1) console.log(generation);
         }
 
         // clear up
+        this.m_forceStop = true;
         workerPool.forEach(worker => worker.terminate());
         core.delete();
         hyperparameters.delete();
     }
 
     private getGenerationSplitCharacter (): string {
-        return this.m_population[0];
+        return this.m_population.charAt(0);
     }
 
     private checkCriterion(criterion: AsmNeGymTrainCriterion, time: number, iteration: number, fitness: number) {
@@ -156,7 +169,7 @@ export class AsmNeGym {
     private splitGeneration(generation: string): Array<string> {
         // first character of generation is meant to be genomes split character
         // split character cannot be present inside genome
-        const splitCharacter = generation[0];
+        const splitCharacter = generation.charAt(0);
         generation = generation.substring(1);
         // rest of the generation is genomes with split character between them
         return generation.split(splitCharacter);
@@ -166,7 +179,7 @@ export class AsmNeGym {
         const genomes = this.splitGeneration(generation);
 
         // equally distrubite genomes to samoe batchSizte +/- batchOverflow (which mean some worker can have +1 genome)
-        const batchSize = Math.ceil(genomes.length / workerPool.length);
+        const batchSize = Math.floor(genomes.length / workerPool.length);
         const batchOverflow = genomes.length % workerPool.length;
 
         const workerPromises: Array<Promise<WorkerOutputData>> = [];
@@ -178,6 +191,10 @@ export class AsmNeGym {
             // get portion of genomes which should be calculated by worker[i]
             const extraGenomes = i < batchOverflow ? 1 : 0;
             const workerGenomes = genomes.splice(0, batchSize + extraGenomes);
+
+            // break if there are no genomes for worker
+            // break is used instead continue because we know that genomes array is empty, so fallowing worker will be empty
+            if (workerGenomes.length === 0) break;
 
             // register promise and result callback
             const workerPromise = this.workerFitnessCalculation(workerPool[i], workerGenomes);
