@@ -86,7 +86,7 @@ onMounted(() => {
         data: {
             labels: [],
             datasets: [{
-                label: 'Population history',
+                label: 'Population fitness history',
                 data: [],
                 borderWidth: 1
             }]
