@@ -28,14 +28,6 @@ class CFlappyControl extends CControl<InternalState> {
         this.handleKeyupEvent = this.handleKeyupEvent.bind(this);
 
         this._controls = { jump: false };
-
-        /* window.addEventListener('keydown', this.handleKeydownEvent);
-        window.addEventListener('keyup', this.handleKeyupEvent); */
-    }
-
-    public onmount(): void {
-        /* window.removeEventListener('keydown', this.handleKeydownEvent);
-        window.removeEventListener('keyup', this.handleKeyupEvent); */
     }
 
     private handleKeyEvent (key: string, state: boolean) {

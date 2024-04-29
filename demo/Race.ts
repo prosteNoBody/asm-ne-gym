@@ -23,14 +23,6 @@ class CRaceControl extends CControl<InternalState> {
         this.handleKeyupEvent = this.handleKeyupEvent.bind(this);
 
         this._controls = { up: false, right: false, down: false, left: false };
-
-        window.addEventListener('keydown', this.handleKeydownEvent);
-        window.addEventListener('keyup', this.handleKeyupEvent);
-    }
-
-    public onmount(): void {
-        window.removeEventListener('keydown', this.handleKeydownEvent);
-        window.removeEventListener('keyup', this.handleKeyupEvent);
     }
 
     private handleKeyEvent (key: string, state: boolean) {
@@ -134,10 +126,10 @@ class CBarier extends CEntity<InternalState> {
 }
 
 export class CRaceGame extends CElgine<CEntity<InternalState>, InternalState> {
-    constructor () {
+    constructor (finishCallback: (score: number) => void) {
         const controls = new CRaceControl();
         super(controls, state => {
-            console.log(state.score);
+            finishCallback(state.score);
         });
 
         // create car

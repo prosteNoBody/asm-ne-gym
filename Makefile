@@ -13,7 +13,7 @@ g++_compile:
 	g++ wasm/test.cpp wasm/CNetwork.cpp wasm/CNeuron.cpp wasm/CConnection.cpp -o wasm/test -g -Wall -pedantic
 
 wasm_compile:
-	mkdir build_wasm; emcc $(WASM_FLAGS) $(WASM_EXTRA_FLAGS) -o build_wasm/asm_core.js wasm/AsmCore.cpp wasm/CNetwork.cpp wasm/CNeuron.cpp wasm/CConnection.cpp
+	mkdir -p build_wasm; emcc $(WASM_FLAGS) $(WASM_EXTRA_FLAGS) -o build_wasm/asm_core.js wasm/AsmCore.cpp wasm/CNetwork.cpp wasm/CNeuron.cpp wasm/CConnection.cpp
 
 wasm_types:
 	make wasm_compile WASM_EXTRA_FLAGS="-fsyntax-only"

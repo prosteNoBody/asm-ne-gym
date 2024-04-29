@@ -19,6 +19,13 @@ const activeModule = ref(selectedModule.value)
 
 const hyperparameters = reactive({ population: 100, mutation: 0.5 });
 const activeHyperparameters = reactive({ population: hyperparameters.population, mutation: hyperparameters.mutation });
+const getInputOutputNeuronsSize = () => {
+    switch (activeModule.value) {
+        case "flappy": return [4, 1];
+        case "race": return [9, 4];
+        default: throw new Error("Unknown input/output neuron size for this module");
+    }
+};
 
 const asmNeGym = new AsmNeGym(activeModule.value, activeAlgorithm.value, [activeHyperparameters.population, activeHyperparameters.mutation]);
 const bestGenome = ref("");
@@ -35,7 +42,7 @@ const setNewConfiguration = () => {
     // apply them to AsmNeGym
     asmNeGym.setAlgorithm(activeAlgorithm.value);
     asmNeGym.setModule(activeModule.value);
-    asmNeGym.setHyperparameters([activeHyperparameters.population, activeHyperparameters.mutation]);
+    asmNeGym.setHyperparameters([...getInputOutputNeuronsSize(), activeHyperparameters.population, activeHyperparameters.mutation]);
 };
 
 let trainingRunning = ref(false);
