@@ -4,6 +4,8 @@ Library aim to give best performance and also plug-in implementation of your own
 Library utilize most out of web technologies like Web Workers and Web Assembly, to give best performance.
 Neuroevolution algorithms are written in C++ and then compiled with emscripten to WASM. This way you can reuse your C++ algorithm elsewhere.
 
+Builded preview page from `@master` is available on https://prostenobody.github.io/asm-ne-gym/
+
 Structure
 ----
  - `core/` - contains key components of library, which glue everything together. You can import `AsmNeGym.ts` class to use in demo page

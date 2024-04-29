@@ -23,6 +23,7 @@ export default defineConfig({
     } */
   ],
   root: resolve(__dirname, 'demo'),
+  base: './',
   build: {
     target: 'esnext',
     emptyOutDir: true,

@@ -1,8 +1,8 @@
 WASM_FLAGS := -lembind -O2 -s MODULARIZE=1 -s EXPORT_ES6=1 -sENVIRONMENT="web" --no-entry
 
-all: typescript_install compile
+all: compile webpage_preview
 
-compile: wasm_compile typescript_compile webpage_preview
+compile: typescript_install wasm_compile typescript_compile
 
 types: wasm_types typescript_types
 
@@ -13,7 +13,7 @@ g++_compile:
 	g++ wasm/test.cpp wasm/CNetwork.cpp wasm/CNeuron.cpp wasm/CConnection.cpp -o wasm/test -g -Wall -pedantic
 
 wasm_compile:
-	emcc $(WASM_FLAGS) $(WASM_EXTRA_FLAGS) -o build_wasm/asm_core.js wasm/AsmCore.cpp wasm/CNetwork.cpp wasm/CNeuron.cpp wasm/CConnection.cpp
+	mkdir build_wasm; emcc $(WASM_FLAGS) $(WASM_EXTRA_FLAGS) -o build_wasm/asm_core.js wasm/AsmCore.cpp wasm/CNetwork.cpp wasm/CNeuron.cpp wasm/CConnection.cpp
 
 wasm_types:
 	make wasm_compile WASM_EXTRA_FLAGS="-fsyntax-only"
