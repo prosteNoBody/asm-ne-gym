@@ -8,7 +8,7 @@ public:
     std::string initialPopulation(const std::vector<double>& hyperparameters) const override {
         return "&N0S;N0S;N1S;N3S;C0,2,1;C1,2,1;C2,3,1&N0S;N0S;N1S;N3S;C0,2,1;C1,2,1;C2,3,1&N0S;N0S;N1S;N3S;C0,2,1;C1,2,1;C2,3,1";
     };
-    std::string generateGeneration(const std::vector<double>& hyperparameters, const std::string& population) const override {
+    std::string generateGeneration(const std::vector<double>& hyperparameters, const std::vector<double>& fitness, const std::string& population) const override {
         return "&N0S;N0S;N1S;N3S;C0,2,1;C1,2,1;C2,3,1&N0S;N0S;N1S;N3S;C0,2,1;C1,2,1;C2,3,1&N0S;N0S;N1S;N3S;C0,2,1;C1,2,1;C2,3,1";
     }
     int buildGenome(const std::string& genome) override {

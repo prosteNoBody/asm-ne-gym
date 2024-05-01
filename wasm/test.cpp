@@ -6,10 +6,10 @@
 int main () {
     AsmCore asmCore("NEAT");
     std::cout << asmCore.initialPopulation({23, 23}) << std::endl;
-    std::cout << asmCore.generateGeneration({ 23 }, "") << std::endl;
-    std::cout << asmCore.buildGenome("") << std::endl;
+    std::cout << asmCore.generateGeneration({ 23 }, { 23 }, "") << std::endl;
+    std::cout << asmCore.buildGenome("IHO-0,1,0.5,1,0;1,2,0.5,1,0") << std::endl;
 
-    std::vector<double> params = { 1, 2 };
+    std::vector<double> params = { 1 };
     std::vector<double> result = asmCore.forward(params);
     std::cout << "Result: ";
     for (auto value : result)

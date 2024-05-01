@@ -124,7 +124,7 @@ export class AsmNeGym {
             // next line is to debug wrong fitness evaluation
             // if (fitness.some(a => a as unknown as boolean === true)) console.error('Wrong fitness value: ', fitness);
 
-            // concat sorted genoems
+            // concat sorted genomes
             generation = this.getGenerationSplitCharacter() + combined.map(val => val.genome).join(this.getGenerationSplitCharacter());
 
             // update iteration number and population
@@ -144,7 +144,10 @@ export class AsmNeGym {
             if (this.checkCriterion(criterion, performance.now() - startTime, iteration, bestFitness) || this.m_forceStop) break;
 
             // create new generation
-            generation = core.generateGeneration(hyperparameters, generation);
+            const sortedFitness = new Vector();
+            combined.forEach(value => sortedFitness.push_back(value.fitness));
+            generation = core.generateGeneration(hyperparameters, sortedFitness, generation);
+            sortedFitness.delete();
             if (generation.indexOf('u') !== -1) console.log(generation);
         }
 

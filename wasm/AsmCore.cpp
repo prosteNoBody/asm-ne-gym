@@ -28,8 +28,8 @@ public:
     std::string initialPopulation(const std::vector<double>& hyperparameters) {
         return algorithm->initialPopulation(hyperparameters);
     }
-    std::string generateGeneration(const std::vector<double>& hyperparameters, const std::string& population) {
-        return algorithm->generateGeneration(hyperparameters, population);
+    std::string generateGeneration(const std::vector<double>& hyperparameters, const std::vector<double>& fitness, const std::string& population) {
+        return algorithm->generateGeneration(hyperparameters, fitness, population);
     }
     int buildGenome(const std::string& genome) {
         return algorithm->buildGenome(genome);
