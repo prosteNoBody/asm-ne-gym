@@ -5,7 +5,7 @@ const module: AsmNeModule = (calculateActions, canvas): Promise<number> => {
     return new Promise(resolve => {
         const game = new CFlappyGame(s => {
             resolve(s);
-        });
+        }, calculateActions);
         
         if (canvas) {
             const gameSize = game.getSize();

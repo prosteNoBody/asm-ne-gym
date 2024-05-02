@@ -20,34 +20,25 @@ type InternalState = {
 
 class CFlappyControl extends CControl<InternalState> {
     private _controls: Controls;
+    private _calculateActions: (inputs: Array<number>) => Array<number>;
 
-    constructor() {
+    constructor(calculateActions: (inputs: Array<number>) => Array<number>) {
         super();
 
-        this.handleKeydownEvent = this.handleKeydownEvent.bind(this);
-        this.handleKeyupEvent = this.handleKeyupEvent.bind(this);
-
+        this._calculateActions = calculateActions;
         this._controls = { jump: false };
     }
 
-    private handleKeyEvent (key: string, state: boolean) {
-        if (key == " ")
-            this._controls.jump = state;
-    }
-    private handleKeydownEvent (e: KeyboardEvent) {
-        this.handleKeyEvent(e.key, true);
-    }
-    private handleKeyupEvent (e: KeyboardEvent) {
-        this.handleKeyEvent(e.key, false);
-    }
-
     public updateState(state: InternalState): InternalState {
+        const jumptedNum = state.birdData.jumped ? 1 : 0;
+
+        const inputs = [jumptedNum, state.birdData.position, state.birdData.velocity];
+        const outputs = this._calculateActions(inputs);
+
+        state.controls.jump = outputs[0] > .5;
+
         state.controls = { ...this._controls }
-        return state;
-        if (state.birdData.position + 26 > state.pipeData.y && !state.controls.jump && state.score < 90000)
-            state.controls.jump = true;
-        else
-            state.controls.jump = false;
+
         return state;
     }
 }
@@ -96,7 +87,7 @@ class CBird extends CEntity<InternalState> {
         state.birdData = this.data;
     }
 
-    public colide(_: InternalState, entity: CEntity<InternalState>): void {
+    public collide(_: InternalState, entity: CEntity<InternalState>): void {
         if (entity instanceof CPipe) {
             this.destroy();
             this._engineCallbacks?.stopEngine();
@@ -115,12 +106,12 @@ class CPipe extends CEntity<InternalState> {
         if (this._pos.x + CPipe.WIDTH < 0)
             this.destroy();
     }
-    public colide(_: InternalState, __: CEntity<InternalState>): void {}
+    public collide(_: InternalState, __: CEntity<InternalState>): void {}
 }
 
 export class CFlappyGame extends CElgine<CEntity<InternalState>, InternalState> {
-    constructor (finishCallback: (score: number) => void) {
-        const controls = new CFlappyControl();
+    constructor (finishCallback: (score: number) => void, calculateActions: (inputs: Array<number>) => Array<number>) {
+        const controls = new CFlappyControl(calculateActions);
         super(controls, state => {
             finishCallback(state.score);
         });

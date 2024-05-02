@@ -16,7 +16,7 @@ export abstract class CEntity<TSharedState> {
     
     public abstract update(state: TSharedState, ticks: number): void;
     public abstract render(ctx: CanvasRenderingContext2D): void;
-    public abstract colide(state: TSharedState, entity: CEntity<TSharedState>): void;
+    public abstract collide(state: TSharedState, entity: CEntity<TSharedState>): void;
     
     public registerCallbacks(engineCallbacks: TEngineCallbacks<CEntity<TSharedState>, TSharedState>) {
         this._engineCallbacks = engineCallbacks;

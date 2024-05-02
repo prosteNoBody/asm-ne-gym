@@ -11,50 +11,60 @@ type InternalState = {
     score: number;
     controls: Controls;
     mapSize: TSize;
+    sensors: Array<number>;
 };
 
 class CRaceControl extends CControl<InternalState> {
-    private _controls: Controls;
+    private _calculateActions: (inputs: Array<number>) => Array<number>;
 
-    constructor() {
+    constructor(calculateActions: (inputs: Array<number>) => Array<number>) {
         super();
-
-        this.handleKeydownEvent = this.handleKeydownEvent.bind(this);
-        this.handleKeyupEvent = this.handleKeyupEvent.bind(this);
-
-        this._controls = { up: false, right: false, down: false, left: false };
-    }
-
-    private handleKeyEvent (key: string, state: boolean) {
-          switch(key) {
-            case "w":
-                this._controls.up = state;
-                break;
-            case "d":
-                this._controls.right = state;
-                break;
-            case "s":
-                this._controls.down = state;
-                break;
-            case "a":
-                this._controls.left = state;
-                break;
-        }
-    }
-    private handleKeydownEvent (e: KeyboardEvent) {
-        this.handleKeyEvent(e.key, true);
-    }
-    private handleKeyupEvent (e: KeyboardEvent) {
-        this.handleKeyEvent(e.key, false);
+        this._calculateActions = calculateActions;
     }
 
     public updateState(state: InternalState): InternalState {
-        state.controls = { ...this._controls }
+        const outputs = this._calculateActions(state.sensors);
+        state.controls.up = outputs[0] > .5;
+        state.controls.right = outputs[1] > .5;
+        state.controls.down = outputs[2] > .5;
+        state.controls.left = outputs[3] > .5;
         return state;
     }
 }
 
+class CCarSensor extends CEntity<InternalState> {
+    constructor (position: TPosition) {
+        super({ width: 5, height: 5 }, position, true);
+    }
+
+    private _collidingWithWall: boolean = false;
+    public render(ctx: CanvasRenderingContext2D): void {
+        ctx.fillStyle = this._collidingWithWall ? "green" : "red";
+        ctx.fillRect(this._pos.x, this._pos.y, this._size.width, this._size.height);
+    }
+
+    public positionUpdate (position: TPosition) {
+        this._pos.x = position.x;
+        this._pos.y = position.y;
+    }
+
+    public isColliding(): number {
+        return this._collidingWithWall ? 1 : 0;
+    }
+
+    public update(state: InternalState, ticks: number): void {
+        this._collidingWithWall = false;
+    }
+
+    public collide(state: InternalState, entity: CEntity<InternalState>): void {
+        if (entity instanceof CBarier) {
+            this._collidingWithWall = true;
+        }
+    }
+}
+
 class CCar extends CEntity<InternalState> {
+    private _sensors: Array<CCarSensor> = [];
     constructor (position: TPosition) {
         super({ width: 20, height: 20 }, position, true);
     }
@@ -62,9 +72,23 @@ class CCar extends CEntity<InternalState> {
     public render(ctx: CanvasRenderingContext2D): void {
         ctx.fillStyle = "blue";
         ctx.fillRect(this._pos.x, this._pos.y, this._size.width, this._size.height);
-        ctx.fillStyle = "red";
+        ctx.fillStyle = "purple";
         ctx.fillRect(this._pos.x + (this._size.width / 2) + Math.sin(this.angle) * (this._size.width / 2) - 2,
             this._pos.y + (this._size.height / 2) + Math.cos(this.angle) * (this._size.height / 2) - 2, 4, 4);
+    }
+
+    private calculateSensorPositions(): Array<TPosition> {
+        const positions = [];
+        for (let distance = 1; distance <= 3; distance++) {
+            for (let angle = -1; angle <= 1; angle++) {
+                const angle_amp = Math.PI / 6;
+                const ditance_amp = 50;
+                const x = this._pos.x + this._size.width / 2 + Math.sin(this.angle + angle * angle_amp) * distance * ditance_amp - 2.5;
+                const y = this._pos.y + this._size.height / 2 + Math.cos(this.angle + angle * angle_amp) * distance * ditance_amp - 2.5;
+                positions.push({ x, y });
+            }
+        }
+        return positions;
     }
 
     private acc = 0;
@@ -97,18 +121,26 @@ class CCar extends CEntity<InternalState> {
         this._pos.x += this.vel * Math.sin(this.angle);
         this._pos.y += this.vel * Math.cos(this.angle);
 
-        // wall colide check
-        if (this._pos.x < 0)
-            this._pos.x = 0;
-        if (this._pos.x + this._size.width > state.mapSize.width)
-            this._pos.x = state.mapSize.width - this._size.width;
-        if (this._pos.y < 0)
-            this._pos.y = 0;
-        if (this._pos.y + this._size.height > state.mapSize.height)
-            this._pos.y = state.mapSize.height - this._size.height;
+        // register sensors
+        if (!this._sensors.length) {
+            const sensorsPositions = this.calculateSensorPositions();
+            for (let i = 0; i < 9; i++) {
+                const sensor = new CCarSensor(sensorsPositions[i]);
+                
+                this._engineCallbacks?.registerEntity(sensor);
+                this._sensors.push(sensor);
+            }
+        }
+
+        // update sensor status
+        state.sensors = this._sensors.map(sensor => sensor.isColliding());
+
+        // update sensors positions
+        const sensorsPositions = this.calculateSensorPositions();
+        this._sensors.forEach((sensor, index) => sensor.positionUpdate(sensorsPositions[index]));
     }
 
-    public colide(_: InternalState, entity: CEntity<InternalState>): void {
+    public collide(_: InternalState, entity: CEntity<InternalState>): void {
         if (entity instanceof CBarier) {
             this.destroy();
             this._engineCallbacks?.stopEngine();
@@ -122,12 +154,12 @@ class CBarier extends CEntity<InternalState> {
         ctx.fillRect(this._pos.x, this._pos.y, this._size.width, this._size.height);
     }
     public update(_: InternalState, __: number): void {}
-    public colide(_: InternalState, __: CEntity<InternalState>): void {}
+    public collide(_: InternalState, __: CEntity<InternalState>): void {}
 }
 
 export class CRaceGame extends CElgine<CEntity<InternalState>, InternalState> {
-    constructor (finishCallback: (score: number) => void) {
-        const controls = new CRaceControl();
+    constructor (finishCallback: (score: number) => void, calculateActions: (inputs: Array<number>) => Array<number>) {
+        const controls = new CRaceControl(calculateActions);
         super(controls, state => {
             finishCallback(state.score);
         });
@@ -176,6 +208,7 @@ export class CRaceGame extends CElgine<CEntity<InternalState>, InternalState> {
                 width: 1500,
                 height: 900,
             },
+            sensors: new Array(9).fill(0),
         }
     }
 }
