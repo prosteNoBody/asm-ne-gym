@@ -19,25 +19,21 @@ type InternalState = {
 };
 
 class CFlappyControl extends CControl<InternalState> {
-    private _controls: Controls;
     private _calculateActions: (inputs: Array<number>) => Array<number>;
 
     constructor(calculateActions: (inputs: Array<number>) => Array<number>) {
         super();
 
         this._calculateActions = calculateActions;
-        this._controls = { jump: false };
     }
 
     public updateState(state: InternalState): InternalState {
         const jumptedNum = state.birdData.jumped ? 1 : 0;
 
-        const inputs = [jumptedNum, state.birdData.position, state.birdData.velocity];
+        const inputs = [jumptedNum, state.birdData.position, state.birdData.velocity, state.pipeData.x, state.pipeData.y];
         const outputs = this._calculateActions(inputs);
 
         state.controls.jump = outputs[0] > .5;
-
-        state.controls = { ...this._controls }
 
         return state;
     }
@@ -73,10 +69,9 @@ class CBird extends CEntity<InternalState> {
             this.data.jumped = false;
         }
 
-        state.score++;
         this._pos.y += this.data.velocity;
-        if (this._pos.y < -100) {
-            this._pos.y = -100;
+        if (this._pos.y < 0) {
+            this._pos.y = 0;
         } else if ((this._pos.y + this._size.height > state.mapSize.height)) {
             this.destroy();
             this._engineCallbacks?.stopEngine();
@@ -123,6 +118,9 @@ export class CFlappyGame extends CElgine<CEntity<InternalState>, InternalState> 
 
     static readonly PIPE_STEP = 4;
     public updateGame(state: InternalState, __: number): void {
+        if (state.score > 100000) this.stop();
+
+        state.score++;
         state.pipeData.x -= CFlappyGame.PIPE_STEP;
 
         if (state.pipeData.x + CPipe.WIDTH < 0) {

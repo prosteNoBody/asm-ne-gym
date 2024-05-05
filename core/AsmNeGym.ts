@@ -41,6 +41,7 @@ export class AsmNeGym {
 
     private m_fitnessHistory: Array<number> = [];
     private m_bestGenome: { fitness: number, genome: string } = { fitness: -1, genome: "" };
+    private m_lastGenome: { fitness: number, genome: string } = { fitness: -1, genome: "" };
 
     public getFitnessHistory() {
         return this.m_fitnessHistory;
@@ -51,10 +52,18 @@ export class AsmNeGym {
     public getBestGenome() {
         return this.m_bestGenome;
     }
+    public getLastGenome() {
+        return this.m_lastGenome;
+    }
 
     public async runBestGenome(canvas: HTMLCanvasElement): Promise<number> {
         if (!this.m_bestGenome.genome) throw new AsmNeGymError("Best genome is empty, run training first");
         return await this.runGenome(this.m_bestGenome.genome, canvas);
+    }
+
+    public async runLastGenome(canvas: HTMLCanvasElement): Promise<number> {
+        if (!this.m_lastGenome.genome) throw new AsmNeGymError("Last genome is empty, run training first");
+        return await this.runGenome(this.m_lastGenome.genome, canvas);
     }
 
     public async runGenome(genome: string, canvas: HTMLCanvasElement): Promise<number> {
@@ -71,7 +80,7 @@ export class AsmNeGym {
     }
 
     async train(criterion: AsmNeGymTrainCriterion) {
-        if (!criterion.fintess && !criterion.iterations && !criterion.time) throw new AsmNeGymError("No criterion were provided");
+        if (!criterion.fitness && !criterion.iterations && !criterion.time) throw new AsmNeGymError("No criterion were provided");
         if (!this.m_forceStop) throw new AsmNeGymError("Train is already running on this instance");
 
         this.m_forceStop = false;
@@ -91,6 +100,7 @@ export class AsmNeGym {
             initializePromises.push(new Promise(resolve => {
                 // wait for worker initialization
                 worker.addEventListener("message", (e: MessageEvent<boolean>) => resolve(true), { once: true });
+
                 // timeout for initialization - cause that this line could cause trouble because synchronization
                 // and fitness might return synchronization parameter, instead real fitness value
                 // turn off if there are trouble, in evaluation
@@ -119,7 +129,7 @@ export class AsmNeGym {
 
 
             // reoder genomes by their fitness function (from best to worst)
-            const combined = fitness.map((val, index) => ({ fitness: val, genome: genomes[index] })).sort((a, b) => a.fitness - b.fitness);
+            const combined = fitness.map((val, index) => ({ fitness: val, genome: genomes[index] })).sort((a, b) => b.fitness- a.fitness);
 
             // next line is to debug wrong fitness evaluation
             // if (fitness.some(a => a as unknown as boolean === true)) console.error('Wrong fitness value: ', fitness);
@@ -134,6 +144,7 @@ export class AsmNeGym {
             // note best fintess from generation
             bestFitness = combined[0].fitness;
             this.m_fitnessHistory.push(bestFitness);
+            this.m_lastGenome = combined[0];
 
             // save best gnome if better 
             if (bestFitness > this.m_bestGenome.fitness) {
@@ -148,7 +159,6 @@ export class AsmNeGym {
             combined.forEach(value => sortedFitness.push_back(value.fitness));
             generation = core.generateGeneration(hyperparameters, sortedFitness, generation);
             sortedFitness.delete();
-            if (generation.indexOf('u') !== -1) console.log(generation);
         }
 
         // clear up
@@ -163,7 +173,7 @@ export class AsmNeGym {
     }
 
     private checkCriterion(criterion: AsmNeGymTrainCriterion, time: number, iteration: number, fitness: number) {
-        if (criterion.fintess && fitness > criterion.fintess) return true;
+        if (criterion.fitness && fitness > criterion.fitness) return true;
         if (criterion.time && time > criterion.time) return true;
         if (criterion.iterations && iteration > criterion.iterations) return true;
         return false;

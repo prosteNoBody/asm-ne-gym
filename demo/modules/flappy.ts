@@ -2,6 +2,8 @@ import type { AsmNeModule } from "@core/types/AsmNeGym";
 import { CFlappyGame } from "@demo/Flappy";
 
 const module: AsmNeModule = (calculateActions, canvas): Promise<number> => {
+    const random = Math.random() * 10000;
+
     return new Promise(resolve => {
         const game = new CFlappyGame(s => {
             resolve(s);

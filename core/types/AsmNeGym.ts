@@ -3,7 +3,7 @@ interface AsmClass {
 }
 
 export type AsmNeGymTrainCriterion = {
-    fintess?: number;
+    fitness?: number;
     time?: number;
     iterations?: number;
 };

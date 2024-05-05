@@ -10,7 +10,7 @@
 
 // algorithm libraries
 #include "algorithms/Neat.hpp"
-#include "algorithms/HyperNeat.hpp"
+#include "algorithms/CNE.hpp"
 
 class AsmCore {
 private:
@@ -20,8 +20,8 @@ public:
     AsmCore(const std::string& algorithmType) {
         if (Neat().getName() == algorithmType)
             algorithm = std::make_unique<Neat>();
-        else if (HyperNeat().getName() == algorithmType)
-            algorithm = std::make_unique<HyperNeat>();
+        else if (CNE().getName() == algorithmType)
+            algorithm = std::make_unique<CNE>();
     };
 
     // wrapper functions

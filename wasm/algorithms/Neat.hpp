@@ -11,6 +11,12 @@ private:
     };
 public:
     std::string getName() const override { return "NEAT"; };
+
+    // hyperparameters
+    // [0] - input neurons
+    // [1] - output neurons
+    // [2] - population size
+    // [3] - mutation rate
     std::string initialPopulation(const std::vector<double>& hyperparameters) const override {
         return "&N0S;N0S;N1S;N3S;C0,2,1;C1,2,1;C2,3,1&N0S;N0S;N1S;N3S;C0,2,1;C1,2,1;C2,3,1&N0S;N0S;N1S;N3S;C0,2,1;C1,2,1;C2,3,1";
     };
