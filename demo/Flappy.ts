@@ -116,9 +116,14 @@ export class CFlappyGame extends CElgine<CEntity<InternalState>, InternalState> 
         this.registerEntity(bird);
     }
 
+    private bug_det: number[] = [];
     static readonly PIPE_STEP = 4;
-    public updateGame(state: InternalState, __: number): void {
-        if (state.score > 100000) this.stop();
+    public updateGame(state: InternalState, tick: number): void {
+        if (tick % 120000 === 0) {
+            if (this.bug_det.filter(i => i === this.bug_det[0]).length < 3)
+                state.score = 0;
+            this.stop()
+        };
 
         state.score++;
         state.pipeData.x -= CFlappyGame.PIPE_STEP;
@@ -128,6 +133,7 @@ export class CFlappyGame extends CElgine<CEntity<InternalState>, InternalState> 
 
             const OFFSET = 100; // from top and bottom 
             const HALF_GAP = 50; // gap for bird to fly through
+
             const gapPosition = Math.ceil(Math.random() * (state.mapSize.height - OFFSET * 2 - HALF_GAP * 2)) + OFFSET;
             
             // create two pipes with gap
@@ -143,6 +149,7 @@ export class CFlappyGame extends CElgine<CEntity<InternalState>, InternalState> 
             );
             
             state.pipeData.y = gapPosition + HALF_GAP;
+            this.bug_det.push(state.birdData.position);
             this.registerEntities([top_pipe, bottom_pipe]);
         }
     }

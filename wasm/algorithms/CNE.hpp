@@ -4,7 +4,7 @@
 #include "../Utils.hpp"
 #include "../CNeuroevolutionBase.hpp"
 
-#define BEST_PERCENTAGE 0.15
+#define BEST_PERCENTAGE_CNE 0.15
 
 class CNE: public CNeuroevolutionBase {
 private:
@@ -12,7 +12,7 @@ private:
         int from;
         int to;
         double weight;
-        Connection(int from, int to, int weight): from(from), to(to), weight(weight) {};
+        Connection(int from, int to, double weight): from(from), to(to), weight(weight) {};
     };
     struct Neuron {
         ENeuronType type;
@@ -144,7 +144,7 @@ public:
             genomes.emplace_back(tmp);
 
         // keep only best genomes
-        size_t bestCnt = std::ceil(genomes.size() * BEST_PERCENTAGE);
+        size_t bestCnt = std::ceil(genomes.size() * BEST_PERCENTAGE_CNE);
         genomes.erase(genomes.begin() + bestCnt, genomes.end());
 
         // convert to fenotype
@@ -176,7 +176,7 @@ public:
                 bool firstParent = (std::rand() % 2) == 0;
                 double newWeight;
                 if (doesMutate)
-                    newWeight = (static_cast<double>(rand()) / RAND_MAX) * 20 - 10;
+                    newWeight = (static_cast<double>(std::rand()) / RAND_MAX) * 20 - 10;
                 else if (firstParent)
                     newWeight = parent1.connections[i].weight;
                 else

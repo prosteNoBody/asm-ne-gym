@@ -48,6 +48,8 @@ export class AsmNeGym {
     }
     public clearFitnessHistory() {
         this.m_fitnessHistory = [];
+        this.m_bestGenome = { fitness: -1, genome: "" };
+        this.m_lastGenome = { fitness: -1, genome: "" };
     }
     public getBestGenome() {
         return this.m_bestGenome;
