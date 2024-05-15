@@ -67,7 +67,7 @@ class CCarSensor extends CEntity<InternalState> {
     }
 
     public collide(state: InternalState, entity: CEntity<InternalState>): void {
-        if (entity instanceof CBarier) {
+        if (entity instanceof CBarrier) {
             this._collidingWithWall = true;
         }
     }
@@ -192,7 +192,7 @@ class CCar extends CEntity<InternalState> {
     }
 
     public collide(state: InternalState, entity: CEntity<InternalState>): void {
-        if (entity instanceof CBarier) {
+        if (entity instanceof CBarrier) {
             // add points for distance to checkpoint
             const checkpoint_pos = CCar.CHECKPOINTS[this.active_checkpoint];
             const distance_to_checkpoint = ((this._pos.x - checkpoint_pos.x) ** 2 + (this._pos.y - checkpoint_pos.y) ** 2) ** (1/2);
@@ -204,7 +204,7 @@ class CCar extends CEntity<InternalState> {
     }
 }
 
-class CBarier extends CEntity<InternalState> {
+class CBarrier extends CEntity<InternalState> {
     public render(ctx: CanvasRenderingContext2D): void {
         ctx.fillStyle = "black";
         ctx.fillRect(this._pos.x, this._pos.y, this._size.width, this._size.height);
@@ -226,7 +226,7 @@ export class CRaceGame extends CElgine<CEntity<InternalState>, InternalState> {
 
         // create barriers
         for (const size of [
-            // outer bariers
+            // outer barriers
             [0, 0, 35, 900],[35, 0, 555, 35], [555, 35, 35, 110], [555, 115, 250, 35],[800, 0, 35, 150], [835, 0, 670 , 35],
             [35, 525, 130, 35], [35, 865, 750, 35], [1465, 35, 35, 200],
             [1455, 235, 35, 150], [785, 840, 150, 35], [935, 825, 150, 35], [1050, 790, 150, 35], [1165, 755, 150, 35],[1280, 720, 150, 35], 
@@ -237,7 +237,7 @@ export class CRaceGame extends CElgine<CEntity<InternalState>, InternalState> {
             [1000, 555, 100, 35], [930, 590, 100, 35], [850, 625, 100, 35], [680, 660, 200, 35], [210, 695, 470, 35], [300, 425, 35, 270],
             [170, 390, 295, 35], [170, 165, 35, 225]
         ]) {
-            const barrier = new CBarier({ width: size[2], height: size[3] }, { x: size[0], y: size[1] }, true);
+            const barrier = new CBarrier({ width: size[2], height: size[3] }, { x: size[0], y: size[1] }, true);
             this.registerEntity(barrier);
         }
     }
