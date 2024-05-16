@@ -47,6 +47,141 @@ const lastGenomeFitness = ref(-1);
 const population = ref("");
 const numOfGeneration = ref(0);
 
+/* THIS CONTAINS SCRIPT FOR TESTING PURPOSES 
+onMounted(() => {
+    const exportJson = (data: number[], name: string) => {
+        // Převod pole na JSON string
+        const jsonString = JSON.stringify(data);
+
+        // Vytvoření Blob objektu s MIME typem aplikace/json
+        const blob = new Blob([jsonString], { type: 'application/json' });
+
+        // Vytvoření URL pro Blob objekt
+        const url = URL.createObjectURL(blob);
+
+        // Vytvoření dočasného linku a programové stáhnutí souboru
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = name + '.json';
+        document.body.appendChild(a);
+        a.click();
+
+        // Odstranění dočasného linku a URL
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+
+    // const testAsmNeGym = new AsmNeGym("flappy", "CNE", [5, 1, 100, 0.09, 5, 2]);
+
+    const exp_asm_train = async (module: string, algorithm: string, hyperparms: number[]) => {
+        const testAsmNeGym = new AsmNeGym(module, algorithm, hyperparms);
+
+        const int = setInterval(() => {
+            console.log(testAsmNeGym.getLastGenome().fitness);
+        }, 60000);
+        await testAsmNeGym.train({ iterations: 3000 });
+        clearInterval(int);
+        console.log(testAsmNeGym.getFitnessHistory());
+        return testAsmNeGym.getFitnessHistory();
+    }
+
+
+
+    // @ts-ignore
+    window.exp_asm = async () => {
+        // @ts-ignore
+        for (const key in window.exp_asm_res) {
+            const runs = 5;
+            console.log(`Starting ${key}`);
+            for (let i = 1; i <= runs; i++) {
+                // @ts-ignore
+                const setup = window.exp_asm_res[key].setup;
+                // @ts-ignore
+                window.exp_asm_res[key].res.push(await exp_asm_train(setup.module, setup.algorithm, setup.hyperparams));
+                console.log(`${i}: ${key}`);
+            }
+            console.log(`Done ${key}`);
+        }
+    };
+
+    // @ts-ignore
+    window.exp_asm_export = (key: name) => {
+        // @ts-ignore
+        window.exp_asm_res[key].res.forEach((item, index) => {
+                exportJson(item, `${key}-${index + 1}`);
+        });
+    }
+
+    // @ts-ignore
+    window.exp_asm_res = {
+        'hyp3/2-2': {
+            setup: {
+                module: "race",
+                algorithm: "CNE",
+                hyperparams: [11, 4, 100, 0.09, 2, 2],
+            },
+            res: [],
+        },
+        'hyp3/4-2': {
+            setup: {
+                module: "race",
+                algorithm: "CNE",
+                hyperparams: [11, 4, 100, 0.09, 4, 2],
+            },
+            res: [],
+        },
+        'hyp3/2-4': {
+            setup: {
+                module: "race",
+                algorithm: "CNE",
+                hyperparams: [11, 4, 100, 0.09, 2, 4],
+            },
+            res: [],
+        },
+        'hyp3/4-4': {
+            setup: {
+                module: "race",
+                algorithm: "CNE",
+                hyperparams: [11, 4, 100, 0.09, 4, 4],
+            },
+            res: [],
+        },
+        'hyp4/0.10': {
+            setup: {
+                module: "race",
+                algorithm: "NEAT",
+                hyperparams: [11, 4, 100, 0.10],
+            },
+            res: [],
+        },
+        'hyp4/0.20': {
+            setup: {
+                module: "race",
+                algorithm: "NEAT",
+                hyperparams: [11, 4, 100, 0.20],
+            },
+            res: [],
+        },
+        'hyp4/0.30': {
+            setup: {
+                module: "race",
+                algorithm: "NEAT",
+                hyperparams: [11, 4, 100, 0.30],
+            },
+            res: [],
+        },
+        'hyp4/0.40': {
+            setup: {
+                module: "race",
+                algorithm: "NEAT",
+                hyperparams: [11, 4, 100, 0.40],
+            },
+            res: [],
+        },
+    }
+}); */
+
 const setNewConfiguration = () => {
     if (trainingRunning.value) return;
     // Set new values

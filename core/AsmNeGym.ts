@@ -74,7 +74,9 @@ export class AsmNeGym {
 
         const phenotype = new AsmCore(this.m_algorithm);
         phenotype.buildGenome(genome);
-        return await environmentRun((inputs: Array<number>) => calculateOutputs(phenotype, Vector, inputs), canvas);
+        const result = await environmentRun((inputs: Array<number>) => calculateOutputs(phenotype, Vector, inputs), canvas);
+        phenotype.delete();
+        return result;
     }
 
     async forceStop() {
