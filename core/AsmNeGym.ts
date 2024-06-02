@@ -39,7 +39,7 @@ export class AsmNeGym {
         this.m_population = population;
     }
 
-    private m_fitnessHistory: Array<number> = [];
+    private m_fitnessHistory: Array<Array<number>> = [];
     private m_bestGenome: { fitness: number, genome: string } = { fitness: -1, genome: "" };
     private m_lastGenome: { fitness: number, genome: string } = { fitness: -1, genome: "" };
 
@@ -147,7 +147,7 @@ export class AsmNeGym {
 
             // note best fintess from generation
             bestFitness = combined[0].fitness;
-            this.m_fitnessHistory.push(bestFitness);
+            this.m_fitnessHistory.push(combined.map(item => item.fitness));
             this.m_lastGenome = combined[0];
 
             // save best gnome if better 

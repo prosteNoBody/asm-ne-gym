@@ -261,7 +261,7 @@ const chartCtx = ref<HTMLCanvasElement | null>(null);
 // @ts-ignore
 let chart;
 onMounted(() => {
-    // @ts-ignore
+/*     // @ts-ignore
     chart = new Chart(chartCtx.value, {
         type: 'line',
         data: {
@@ -279,25 +279,80 @@ onMounted(() => {
                 }
             }
         }
+    }); */
+
+    // @ts-ignore
+    chart = new Chart(chartCtx.value, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'Best fitness',
+                    data: [],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: false
+                },
+                {
+                    label: 'Worst fitness',
+                    data: [],
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    fill: false
+                },
+                {
+                    label: 'Average fitness',
+                    data: [],
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Generace'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Fitness'
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
     });
 });
-const populationCrossSection = (population: Array<number>, size:number) => {
+const populationCrossSection = (population: Array<Array<number>>, size:number) => {
     if (population.length <= size) return population.map((item, index) => ({ fitness: item, index }));
 
     const last = { fitness: population[population.length - 1], index: population.length - 1 };
     size--;
     const step = Math.floor((population.length - 1) / size);
 
-    const result: Array<{ fitness: number, index: number }> = [];
+    const result: Array<{ fitness: Array<number>, index: number }> = [];
     for (let i = 0; i < population.length; i += step) {
         result.push({ fitness: population[i], index: i });
     }
     result.push(last);
     return result;
 }
-const updateChart = (populationHistory: Array<{ fitness: number, index: number }>) => {
+const updateChart = (populationHistory: Array<{ fitness: Array<number>, index: number }>) => {
+    const populationFitness = populationHistory.map(generation => generation.fitness);
+
     // @ts-ignore
-    chart.data.datasets[0].data = populationHistory.map(item => item.fitness);
+    chart.data.datasets[0].data = populationFitness.map(generation => Math.max(...generation));
+    // @ts-ignore
+    chart.data.datasets[1].data = populationFitness.map(generation => Math.min(...generation));
+    // @ts-ignore
+    chart.data.datasets[2].data = populationFitness.map(generation => generation.reduce((a, b) => a + b, 0) / generation.length);
     // @ts-ignore
     chart.data.labels = populationHistory.map(item => item.index);
     // @ts-ignore
@@ -332,7 +387,7 @@ const selectContent = (event: InputEvent) => {
             <canvas ref="canvas" class="border-4 border-black bg-white" style="width: 600px; height: 600px;" width="600" height="600"></canvas>
             <div class="flex flex-col">
                 <!-- Population fitness history chart -->
-                <canvas ref="chartCtx" class="max-w-96 mb-12" />
+                <canvas ref="chartCtx" class="max-w-[32rem] mb-12" />
                 
                 <!-- Data -->
                 <div>
