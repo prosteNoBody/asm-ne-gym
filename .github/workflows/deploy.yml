@@ -21,7 +21,7 @@ jobs:
 
       - name: Run Docker Container and Make Build
         run: |
-          docker run --name my-app --user $(id -u):$(id -g) -v .:/src my-application make compile
+          docker run --name my-app -v .:/src my-application make compile
 
       - name: Change Ownership of Build Directory
         run: sudo chown -R $USER:$USER ./build
