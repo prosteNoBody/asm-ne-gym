@@ -23,8 +23,8 @@ jobs:
         run: |
           docker run --name my-app --user $(id -u):$(id -g) -v .:/src my-application make compile
 
-      - name: Create Build Directory with Permissions
-        run: mkdir -p ./build
+      - name: Change Ownership of Build Directory
+        run: sudo chown -R $USER:$USER ./build
 
       - name: Copy Build Directory
         run: docker cp my-app:/src/build ./build
