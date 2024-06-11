@@ -23,6 +23,9 @@ jobs:
         run: |
           docker run --name my-app -v .:/src my-application make compile
 
+      - name: Create Build Directory with Permissions
+        run: mkdir -p ./build
+
       - name: Copy Build Directory
         run: docker cp my-app:/src/build ./build
 
