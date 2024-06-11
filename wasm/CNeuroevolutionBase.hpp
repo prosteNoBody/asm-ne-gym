@@ -15,7 +15,7 @@ public:
 
     // managing population
     virtual std::string initialPopulation(const std::vector<double>&) const = 0;
-    virtual std::string generateGeneration(const std::vector<double>&, const std::vector<double>&, const std::string&) const = 0;
+    virtual std::string generateGeneration(const std::vector<double>&, const std::vector<double>&, const std::string&, const std::string&) const = 0;
     
     // network managment
     virtual int buildGenome(const std::string& genome) = 0;

@@ -22,6 +22,6 @@ int main () {
     for (int i = 0; i < hyperparams[2]; i++)
         fitness.emplace_back((hyperparams[2] - i) * 10);
     for (int i = 0; i < 1000; i++) {
-        population = asmCore.generateGeneration(hyperparams, fitness, population);
+        population = asmCore.generateGeneration(hyperparams, fitness, population, "IDK IDK");
     }
 }

@@ -47,7 +47,97 @@ const lastGenomeFitness = ref(-1);
 const population = ref("");
 const numOfGeneration = ref(0);
 
-/* THIS CONTAINS SCRIPT FOR TESTING PURPOSES 
+/* onMounted(() => {
+    // @ts-ignore
+    window.asm_exportJson = (data: number[], name: string) => {
+        // Převod pole na JSON string
+        const jsonString = JSON.stringify(data);
+
+        // Vytvoření Blob objektu s MIME typem aplikace/json
+        const blob = new Blob([jsonString], { type: 'application/json' });
+
+        // Vytvoření URL pro Blob objekt
+        const url = URL.createObjectURL(blob);
+
+        // Vytvoření dočasného linku a programové stáhnutí souboru
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = name + '.json';
+        document.body.appendChild(a);
+        a.click();
+
+        // Odstranění dočasného linku a URL
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    setTimeout(async () => {
+        // @ts-ignore
+        window.asm_results = {};
+        for (const seed of ['seed123', 'nahodnyGenerator', 'seed1234']) {
+            for (let i = 0; i < 3; i++) {
+                const testAsmNeGym = new AsmNeGym("race", "CNE", [11, 4, 100, 0.09, 4, 2]);
+                await testAsmNeGym.train({ iterations: 3000 }, seed);
+                // @ts-ignore
+                if (!window.asm_results[seed]) window.asm_results[seed] = [];
+                // @ts-ignore
+                window.asm_results[seed].push(testAsmNeGym.getFitnessHistory().map(gen => Math.max(...gen)));
+            }
+        }
+
+        console.log("DONE");
+
+        // @ts-ignore
+        console.log(window.asm_results);
+    }, 5000);
+}); */
+
+/* // THIS CONTAINS SCRIPT FOR TESTING SPEED
+onMounted(() => {
+    const exportJson = (data: { [key: number]: number[] }, name: string) => {
+        // Převod pole na JSON string
+        const jsonString = JSON.stringify(data);
+
+        // Vytvoření Blob objektu s MIME typem aplikace/json
+        const blob = new Blob([jsonString], { type: 'application/json' });
+
+        // Vytvoření URL pro Blob objekt
+        const url = URL.createObjectURL(blob);
+
+        // Vytvoření dočasného linku a programové stáhnutí souboru
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = name + '.json';
+        document.body.appendChild(a);
+        a.click();
+
+        // Odstranění dočasného linku a URL
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    setTimeout(async () => {
+        const results: number[][] = [];
+        for (let threads = 1; threads <= 8; threads++) {
+            for (let run = 0; run < 3; run++) {
+                const testAsmNeGym = new AsmNeGym("race", "CNE", [11, 4, 100, 0.09, 4, 2]);
+                testAsmNeGym.setThreads(threads);
+                const time = performance.now();
+                await testAsmNeGym.train({ iterations: 3000 }, 'key1231231');
+                const resTime = performance.now() - time;
+
+                if (!Array.isArray(results[threads])) results[threads] = [];
+                results[threads].push(resTime / 1000);
+            }
+        }
+
+        console.log(results);
+        exportJson(results, "threads");
+
+    }, 5000);
+}) */
+
+/* THIS CONTAINS SCRIPT FOR TESTING PURPOSES (experiments in bachlor thesis)
 onMounted(() => {
     const exportJson = (data: number[], name: string) => {
         // Převod pole na JSON string
@@ -211,10 +301,10 @@ const stopTrain = () => {
 const startTrain = async () => {
     trainingRunning.value = true;
     goingToStop.value = false;
-    if (!asmNeGym.getPopulation()) await asmNeGym.train({ iterations: 1 });
+    if (!asmNeGym.getPopulation()) await asmNeGym.train({ iterations: 1 }, 'asdfg');
 
     // start train process while lastGenome simulation is running
-    const trainPromise = asmNeGym.train({ time: 3600000 });
+    const trainPromise = asmNeGym.train({ time: 3600000 }, 'asdfg');
     while (!goingToStop.value) {
         // run best genome
         await asmNeGym.runLastGenome(canvas.value!);

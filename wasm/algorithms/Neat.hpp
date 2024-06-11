@@ -275,7 +275,9 @@ public:
             population += "&" + genome;
         return population;
     };
-    std::string generateGeneration(const std::vector<double>& hyperparameters, const std::vector<double>& fitness, const std::string& population) const override {
+    std::string generateGeneration(
+        const std::vector<double>& hyperparameters, const std::vector<double>& fitness, const std::string& population, const std::string& seed
+    ) const override {
         std::string tmp;
         std::istringstream iss_population(population);
         iss_population.ignore(1);

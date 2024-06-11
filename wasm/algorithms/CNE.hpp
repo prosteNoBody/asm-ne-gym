@@ -126,14 +126,16 @@ public:
             // input connections
             int numOfConnections = inputNeurons*neuronsPerLayer + neuronsPerLayer*neuronsPerLayer*(numOfLayers - 1) + neuronsPerLayer*outputNeurons;
             for (int i = 0; i < numOfConnections; i++)
-                genome += std::to_string((static_cast<double>(rand()) / RAND_MAX) * 20 - 10) + ";";
+                genome += "1;";
             genome.pop_back();
 
             population += "&" + genome;
         }
         return population;
     };
-    std::string generateGeneration(const std::vector<double>& hyperparameters, const std::vector<double>& fitness, const std::string& population) const override {
+    std::string generateGeneration(
+        const std::vector<double>& hyperparameters, const std::vector<double>& fitness, const std::string& population, const std::string& seed
+    ) const override {
         std::string tmp;
         std::istringstream iss_population(population);
         iss_population.ignore(1);
@@ -158,9 +160,10 @@ public:
         double mutationRate = hyperparameters[3];
 
         // random dist
-        std::random_device rd;
-        std::mt19937 gen(rd());
+        std::hash<std::string> hash_seed;
+        std::mt19937 gen(hash_seed(seed));
         std::discrete_distribution dist(fitness.begin(), fitness.begin() + bestCnt);
+        std::uniform_real_distribution<double> uniform_dist(-10.0, 10.0);
         for (int i = 0; i < populationSize; i++) {
             Network& parent1 = fenotypes.at(dist(gen));
             Network& parent2 = fenotypes.at(dist(gen));
@@ -172,11 +175,11 @@ public:
 
             // copy connections
             for (size_t i = 0; i < parent1.connections.size(); i++) {
-                bool doesMutate = (std::rand() % static_cast<int>(std::ceil(1 / mutationRate))) == 0;
-                bool firstParent = (std::rand() % 2) == 0;
+                bool doesMutate = (gen() % static_cast<int>(std::ceil(1 / mutationRate))) == 0;
+                bool firstParent = (gen() % 2) == 0;
                 double newWeight;
                 if (doesMutate)
-                    newWeight = (static_cast<double>(std::rand()) / RAND_MAX) * 20 - 10;
+                    newWeight = uniform_dist(gen);
                 else if (firstParent)
                     newWeight = parent1.connections[i].weight;
                 else

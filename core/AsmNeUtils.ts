@@ -26,3 +26,13 @@ export const calculateOutputs = (phenotype: AsmCore, vector: typeof Vector, inpu
 
     return outputs;
 }
+
+export const generateRandomSeed = (length: number): string => {
+    const CHAR_SET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+
+    for (let i = 0; i < length; i++)
+        result += CHAR_SET.charAt(Math.floor(Math.random() * CHAR_SET.length));
+
+    return result;
+}

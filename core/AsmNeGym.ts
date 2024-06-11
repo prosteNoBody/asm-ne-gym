@@ -1,9 +1,11 @@
 import AsmCoreWasm from "@build_wasm/asm_core.js";
 import AsmNeWorker from "@core/AsmNeWorker?worker";
-import { AsmNeGymError, calculateOutputs } from "@core/AsmNeUtils";
+import { AsmNeGymError, calculateOutputs, generateRandomSeed } from "@core/AsmNeUtils";
 import type { AsmNeModule, AsmNeGymTrainCriterion, WorkerInputData, WorkerOutputData } from "@core/types/AsmNeGym";
 
 const WORKER_INIT_TIMEOUT = 60000;
+const RANDOM_SEED_LENGTH = 10;
+
 export class AsmNeGym {
     private m_module: string;
     private m_algorithm: string;
@@ -68,13 +70,15 @@ export class AsmNeGym {
         return await this.runGenome(this.m_lastGenome.genome, canvas);
     }
 
-    public async runGenome(genome: string, canvas: HTMLCanvasElement): Promise<number> {
+    public async runGenome(genome: string, canvas: HTMLCanvasElement, seed?: string): Promise<number> {
         const { default: environmentRun }: { default: AsmNeModule } = await import(`../demo/modules/${this.m_module}.ts`);
         const { Vector, AsmCore } = await AsmCoreWasm();
 
+        if (!seed) seed = generateRandomSeed(RANDOM_SEED_LENGTH);
+
         const phenotype = new AsmCore(this.m_algorithm);
         phenotype.buildGenome(genome);
-        const result = await environmentRun((inputs: Array<number>) => calculateOutputs(phenotype, Vector, inputs), canvas);
+        const result = await environmentRun((inputs: Array<number>) => calculateOutputs(phenotype, Vector, inputs), canvas, seed);
         phenotype.delete();
         return result;
     }
@@ -83,9 +87,12 @@ export class AsmNeGym {
         this.m_forceStop = true;
     }
 
-    async train(criterion: AsmNeGymTrainCriterion) {
+    async train(criterion: AsmNeGymTrainCriterion, seed?: string) {
         if (!criterion.fitness && !criterion.iterations && !criterion.time) throw new AsmNeGymError("No criterion were provided");
         if (!this.m_forceStop) throw new AsmNeGymError("Train is already running on this instance");
+
+        // fill seed if it wasn't provided
+        if (!seed || !seed.length) seed = generateRandomSeed(RANDOM_SEED_LENGTH);
 
         this.m_forceStop = false;
 
@@ -128,7 +135,7 @@ export class AsmNeGym {
         let iteration = 0;
         while (true) {
             // calculate fintess of all genomes
-            const fitness = await this.evaluateGeneration(workerPool, generation);
+            const fitness = await this.evaluateGeneration(workerPool, generation, seed);
             const genomes = this.splitGeneration(generation);
 
 
@@ -161,7 +168,7 @@ export class AsmNeGym {
             // create new generation
             const sortedFitness = new Vector();
             combined.forEach(value => sortedFitness.push_back(value.fitness));
-            generation = core.generateGeneration(hyperparameters, sortedFitness, generation);
+            generation = core.generateGeneration(hyperparameters, sortedFitness, generation, seed);
             sortedFitness.delete();
         }
 
@@ -192,7 +199,7 @@ export class AsmNeGym {
         return generation.split(splitCharacter);
     }
 
-    private async evaluateGeneration(workerPool: Array<Worker>, generation: string): Promise<Array<number>> {
+    private async evaluateGeneration(workerPool: Array<Worker>, generation: string, seed: string): Promise<Array<number>> {
         const genomes = this.splitGeneration(generation);
 
         // equally distrubite genomes to samoe batchSizte +/- batchOverflow (which mean some worker can have +1 genome)
@@ -214,7 +221,7 @@ export class AsmNeGym {
             if (workerGenomes.length === 0) break;
 
             // register promise and result callback
-            const workerPromise = this.workerFitnessCalculation(workerPool[i], workerGenomes);
+            const workerPromise = this.workerFitnessCalculation(workerPool[i], workerGenomes, seed);
             workerPromise.then(fitness => result.push({ index: i, fitness }));
             workerPromises.push(workerPromise);
         }
@@ -226,7 +233,7 @@ export class AsmNeGym {
     }
 
     // resolve single genome batch
-    private workerFitnessCalculation(worker: Worker, genomes: Array<string>): Promise<WorkerOutputData> {
+    private workerFitnessCalculation(worker: Worker, genomes: Array<string>, seed: string): Promise<WorkerOutputData> {
         return new Promise(resolve => {
             worker.addEventListener("message", (e: MessageEvent<WorkerOutputData>) => resolve(e.data), { once: true });
 

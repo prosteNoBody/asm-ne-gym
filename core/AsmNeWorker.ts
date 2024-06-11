@@ -8,7 +8,7 @@ import type { AsmNeModule, WorkerInputData, WorkerOutputData } from "@core/types
 
     // initialize listener for calculations
     addEventListener("message", async (e: MessageEvent<WorkerInputData>) => {
-        const { module, algorithm, genomes } = e.data;
+        const { module, algorithm, genomes, seed } = e.data;
         // load passed module
         const { default: environmentRun }: { default: AsmNeModule } = await import(`../demo/modules/${module}.ts`);
         
@@ -20,7 +20,7 @@ import type { AsmNeModule, WorkerInputData, WorkerOutputData } from "@core/types
             let fitness = -1;
             try {
                 // calculate fitness
-                fitness = await environmentRun((inputs: Array<number>) => calculateOutputs(phenotype, Vector, inputs), undefined);
+                fitness = await environmentRun((inputs: Array<number>) => calculateOutputs(phenotype, Vector, inputs), undefined, seed);
             } catch (e) {
                 // console.log(e);
             }
